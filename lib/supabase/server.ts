@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -7,8 +8,12 @@ import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
  * Server client bound to the incoming request cookies.
  * Works in Server Components, Server Actions and Route Handlers.
  * All reads/writes are subject to Supabase Row Level Security.
+ *
+ * Memoized per render pass (React `cache`) so every call site in a
+ * request shares one client — and Supabase's in-memory session token —
+ * avoiding duplicate auth round trips.
  */
-export async function createClient() {
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
 
   return createServerClient(supabaseUrl(), supabasePublishableKey(), {
@@ -28,4 +33,4 @@ export async function createClient() {
       },
     },
   });
-}
+});

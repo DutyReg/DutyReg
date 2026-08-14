@@ -1,11 +1,13 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 
 import { needsConfiguration } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import type { UserContext } from "@/lib/types";
+import type { Company, Member, Role, UserContext } from "@/lib/types";
 
-export const getCurrentUser = cache(async () => {
+/** Single session lookup per render pass; all call sites share one network call. */
+const getSessionUser = cache(async (): Promise<User | null> => {
   if (needsConfiguration()) return null;
   const supabase = await createClient();
   const {
@@ -14,49 +16,52 @@ export const getCurrentUser = cache(async () => {
   return user;
 });
 
-const getMembership = cache(async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+export const getCurrentUser = getSessionUser;
 
-  const { data } = await supabase
-    .from("company_members")
-    .select("id, company_id, user_id, role, created_at")
-    .eq("user_id", user.id)
-    .maybeSingle();
+interface MembershipRow {
+  id: string;
+  company_id: string;
+  user_id: string;
+  role: Role;
+  created_at: string;
+  companies: Company | null;
+}
 
-  if (!data) return null;
+const getMembership = cache(
+  async (
+    user: User,
+  ): Promise<{ member: Member | null; company: Company | null }> => {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("company_members")
+      .select(
+        "id, company_id, user_id, role, created_at, companies(id, name, created_at)",
+      )
+      .eq("user_id", user.id)
+      .maybeSingle<MembershipRow>();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("email, full_name")
-    .eq("id", user.id)
-    .maybeSingle();
+    if (!data) return { member: null, company: null };
 
-  return { ...data, profile };
-});
+    return {
+      member: {
+        id: data.id,
+        company_id: data.company_id,
+        user_id: data.user_id,
+        role: data.role,
+        created_at: data.created_at,
+      },
+      company: data.companies,
+    };
+  },
+);
 
 /** Current user context; null when signed out. */
 export async function getContext(): Promise<UserContext | null> {
   if (needsConfiguration()) return null;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return null;
 
-  const membership = await getMembership();
-  let company = null;
-  if (membership) {
-    const { data: companyData } = await supabase
-      .from("companies")
-      .select("id, name, created_at")
-      .eq("id", membership.company_id)
-      .maybeSingle();
-    company = companyData;
-  }
+  const { member, company } = await getMembership(user);
 
   return {
     user: {
@@ -65,8 +70,8 @@ export async function getContext(): Promise<UserContext | null> {
       full_name: (user.user_metadata?.full_name as string | undefined) ?? null,
     },
     company,
-    member: membership,
-    role: membership?.role ?? null,
+    member,
+    role: member?.role ?? null,
   };
 }
 

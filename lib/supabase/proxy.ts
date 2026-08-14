@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
 
+const SESSION_COOKIE_PREFIX = "sb-";
+
 /**
  * Client used inside proxy.ts to refresh expired auth sessions
  * on every request and re-set the session cookies.
@@ -11,6 +13,13 @@ export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   if (!supabaseUrl() || !supabasePublishableKey()) {
+    return supabaseResponse;
+  }
+
+  const hasSessionCookie = request.cookies
+    .getAll()
+    .some(({ name }) => name.startsWith(SESSION_COOKIE_PREFIX));
+  if (!hasSessionCookie) {
     return supabaseResponse;
   }
 

@@ -55,7 +55,6 @@ export interface Member {
   user_id: string;
   role: Role;
   created_at: string;
-  profile?: { email: string | null; full_name: string | null } | null;
 }
 
 export interface UserContext {
