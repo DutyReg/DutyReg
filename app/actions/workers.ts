@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { getContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { OwnerContext } from "@/lib/types";
@@ -29,7 +31,9 @@ export async function addWorker(formData: FormData): Promise<ActionResult> {
     worker_code: code,
   });
 
-  return error ? { error: error.message } : { success: true };
+  if (error) return { error: error.message };
+  revalidatePath("/settings/workers");
+  return { success: true };
 }
 
 export async function updateWorker(formData: FormData): Promise<ActionResult> {
@@ -50,22 +54,25 @@ export async function updateWorker(formData: FormData): Promise<ActionResult> {
     .eq("id", id)
     .eq("company_id", ctx.company.id);
 
-  return error ? { error: error.message } : { success: true };
+  if (error) return { error: error.message };
+  revalidatePath("/settings/workers");
+  return { success: true };
 }
 
-export async function toggleWorkerActive(formData: FormData): Promise<ActionResult> {
+export async function deleteWorker(formData: FormData): Promise<ActionResult> {
   const ctx = await requireOwnerCompany();
   if (!ctx) return { error: "Only the owner can manage workers." };
 
   const id = String(formData.get("id") ?? "");
-  const active = formData.get("active") === "true";
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("workers")
-    .update({ active })
+    .delete()
     .eq("id", id)
     .eq("company_id", ctx.company.id);
 
-  return error ? { error: error.message } : { success: true };
+  if (error) return { error: error.message };
+  revalidatePath("/settings/workers");
+  return { success: true };
 }

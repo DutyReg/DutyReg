@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { getContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { OwnerContext } from "@/lib/types";
@@ -33,6 +35,7 @@ export async function addMember(formData: FormData): Promise<ActionResult> {
   });
 
   if (error) return { error: error.message };
+  revalidatePath("/settings/members");
   return { success: true };
 }
 
@@ -52,6 +55,7 @@ export async function updateMemberRole(formData: FormData): Promise<ActionResult
   });
 
   if (error) return { error: error.message };
+  revalidatePath("/settings/members");
   return { success: true };
 }
 
@@ -68,5 +72,6 @@ export async function removeMember(formData: FormData): Promise<ActionResult> {
   });
 
   if (error) return { error: error.message };
+  revalidatePath("/settings/members");
   return { success: true };
 }

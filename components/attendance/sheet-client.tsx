@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { CheckIcon } from "@/components/icons";
 import { Btn, Chip, Select } from "@/components/ui";
 import { buildReportText, whatsAppLink, type ReportData } from "@/lib/report-builder";
-import { nextStatus } from "@/lib/rbac";
+import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
 
 type RowStatus = "present" | "absent" | "unknown";
@@ -87,6 +87,7 @@ export function AttendanceSheetClient({
 
   const rowsRef = useRef(rows);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dirtyRef = useRef(false);
 
   useEffect(() => {
     rowsRef.current = rows;
@@ -98,12 +99,29 @@ export function AttendanceSheetClient({
   }
 
   function scheduleSave() {
+    dirtyRef.current = true;
     setSaveState("unsaved");
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => void flush(), SAVE_DELAY_MS);
   }
 
-  async function flush() {
+  const buildPayload = useCallback(
+    function buildPayload(now: string) {
+      return Object.entries(rowsRef.current).map(([workerId, row]) => ({
+        id: row.entryId ?? undefined,
+        sheet_id: sheetId,
+        worker_id: workerId,
+        status: row.status,
+        in_time: row.in_time ? `${row.in_time}:00` : null,
+        out_time: row.out_time ? `${row.out_time}:00` : null,
+        note: row.note?.trim() ? row.note.trim() : null,
+        updated_at: now,
+      }));
+    },
+    [sheetId],
+  );
+
+  const flush = useCallback(async function flush() {
     if (saveTimer.current) {
       clearTimeout(saveTimer.current);
       saveTimer.current = null;
@@ -112,16 +130,7 @@ export function AttendanceSheetClient({
 
     const supabase = createClient();
     const now = new Date().toISOString();
-    const payload = Object.entries(rowsRef.current).map(([workerId, row]) => ({
-      id: row.entryId ?? undefined,
-      sheet_id: sheetId,
-      worker_id: workerId,
-      status: row.status,
-      in_time: row.in_time ? `${row.in_time}:00` : null,
-      out_time: row.out_time ? `${row.out_time}:00` : null,
-      note: row.note?.trim() ? row.note.trim() : null,
-      updated_at: now,
-    }));
+    const payload = buildPayload(now);
 
     const { error } = await supabase
       .from("attendance_entries")
@@ -138,15 +147,56 @@ export function AttendanceSheetClient({
       .update({ updated_at: now, updated_by: userId })
       .eq("id", sheetId);
 
+    dirtyRef.current = false;
     setSaveState("saved");
     return true;
-  }
+  }, [buildPayload, sheetId, userId]);
+
+  /** Last-chance save that survives a full page unload (refresh/close tab). */
+  const flushWithKeepalive = useCallback(async function flushWithKeepalive() {
+    const accessToken = readAccessTokenFromCookie();
+    if (!accessToken) return;
+
+    const now = new Date().toISOString();
+    const payload = buildPayload(now);
+    const base = supabaseUrl();
+    const headers: Record<string, string> = {
+      apikey: supabasePublishableKey(),
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates",
+    };
+
+    void fetch(`${base}/rest/v1/attendance_entries?on_conflict=sheet_id%2Cworker_id`, {
+      method: "POST",
+      keepalive: true,
+      headers,
+      body: JSON.stringify(payload),
+    });
+  }, [buildPayload]);
 
   useEffect(() => {
     return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+      }
+      if (dirtyRef.current) void flush();
     };
-  }, []);
+  }, [flush]);
+
+  useEffect(() => {
+    function onPageHide() {
+      if (!dirtyRef.current) return;
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+      }
+      void flushWithKeepalive();
+    }
+    window.addEventListener("pagehide", onPageHide);
+    return () => window.removeEventListener("pagehide", onPageHide);
+  }, [flushWithKeepalive]);
 
   async function markAllPresent() {
     setRows((prev) => {
@@ -249,7 +299,7 @@ export function AttendanceSheetClient({
       </div>
 
       {hasAnything ? (
-        <ul className="grid gap-3">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {workers.map((worker, index) => (
             <WorkerRowCard
               key={worker.id}
@@ -280,18 +330,23 @@ export function AttendanceSheetClient({
         <Btn size="lg" className="w-full" onClick={() => window.open(whatsAppLink(reportText), "_blank", "noopener")}>
           Share on WhatsApp
         </Btn>
-        <div className="grid grid-cols-2 gap-2">
-          <Btn variant="secondary" onClick={handleCopy}>
+        {typeof navigator !== "undefined" && navigator.share ? (
+          <div className="grid grid-cols-2 gap-2">
+            <Btn variant="secondary" onClick={handleCopy}>
+              {copyState === "copied" ? "Copied" : "Copy text"}
+            </Btn>
+            <Btn
+              variant="secondary"
+              onClick={() => navigator.share?.({ title: "DayMark attendance report", text: reportText }).catch(() => {})}
+            >
+              More options
+            </Btn>
+          </div>
+        ) : (
+          <Btn variant="secondary" className="w-full" onClick={handleCopy}>
             {copyState === "copied" ? "Copied" : "Copy text"}
           </Btn>
-          <Btn
-            variant="secondary"
-            onClick={() => navigator.share?.({ title: "DayMark attendance report", text: reportText }).catch(() => {})}
-            disabled={typeof navigator === "undefined" || !navigator.share}
-          >
-            More options
-          </Btn>
-        </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3">
@@ -347,14 +402,6 @@ function WorkerRowCard({
             ) : null}
           </div>
         </div>
-        <button
-          type="button"
-          aria-label={`Cycle status for ${worker.name}`}
-          onClick={() => onChange({ status: nextStatus(row.status) })}
-          className="shrink-0 rounded-full p-1 text-muted transition-colors hover:bg-zinc-100 hover:text-ink dark:hover:bg-zinc-800/70"
-        >
-          <SyncGlyph />
-        </button>
       </div>
 
       <div className="grid grid-cols-3 gap-2 px-3.5 py-3">
@@ -461,23 +508,18 @@ function SavingGlyph() {
   return <span className="size-2 animate-pulse rounded-full bg-current" aria-hidden />;
 }
 
-function SyncGlyph() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M20 8A8 8 0 0 0 5.6 6.6L4 8" />
-      <path d="M4 4v4h4" />
-      <path d="M4 16a8 8 0 0 0 14.4 1.4L20 16" />
-      <path d="M20 20v-4h-4" />
-    </svg>
-  );
+function readAccessTokenFromCookie(): string | null {
+  try {
+    const cookie = document.cookie
+      .split("; ")
+      .find((entry) => entry.startsWith("sb-") && entry.includes("-auth-token="));
+    if (!cookie) return null;
+    const encoded = cookie.slice(cookie.indexOf("=") + 1);
+    const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    const session = JSON.parse(atob(padded));
+    return typeof session.access_token === "string" ? session.access_token : null;
+  } catch {
+    return null;
+  }
 }

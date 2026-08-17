@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 
-import { addWorker, toggleWorkerActive, updateWorker } from "@/app/actions/workers";
+import { addWorker, deleteWorker, updateWorker } from "@/app/actions/workers";
 import { ActionForm } from "@/components/action-form";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 import { Card, Chip, EmptyState, Field, Input, SectionTitle, Select } from "@/components/ui";
 import { requireContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -34,6 +36,7 @@ export default async function WorkersPage() {
 
   return (
     <div className="grid gap-5">
+      <RealtimeRefresher tables={[{ table: "workers", companyId: ctx.company.id }]} />
       <Card className="grid gap-4 px-5 py-6">
         <div className="grid gap-1">
           <SectionTitle>Add a worker</SectionTitle>
@@ -121,25 +124,15 @@ function WorkerCard({ worker, sites }: { worker: Worker; sites: Site[] }) {
         </div>
       </ActionForm>
 
-      <ActionForm
-        action={toggleWorkerActive}
-        resetKey={`${worker.id}-${worker.active}`}
-        successMessage={worker.active ? "Worker deactivated." : "Worker activated."}
-        className="gap-2"
-      >
-        <input type="hidden" name="id" value={worker.id} />
-        <input type="hidden" name="active" value={String(!worker.active)} />
-        <button
-          type="submit"
-          className={`inline-flex h-11 items-center gap-2 rounded-full border px-5 text-sm font-semibold transition-colors active:translate-y-px ${
-            worker.active
-              ? "border-absent-border bg-absent-soft text-absent-ink hover:bg-absent-soft/70"
-              : "border-present-border bg-present-soft text-present-ink hover:bg-present-soft/70"
-          }`}
-        >
-          {worker.active ? "Deactivate worker" : "Reactivate worker"}
-        </button>
-      </ActionForm>
+      <div className="pt-1">
+        <ConfirmDialog
+          label="Delete worker"
+          title="Delete this worker?"
+          message="This permanently deletes the worker and their attendance records. This cannot be undone."
+          action={deleteWorker}
+          hiddenFields={{ id: worker.id }}
+        />
+      </div>
     </Card>
   );
 }

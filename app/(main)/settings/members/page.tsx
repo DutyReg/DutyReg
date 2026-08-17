@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 import { addMember, removeMember, updateMemberRole } from "@/app/actions/members";
 import { ActionForm } from "@/components/action-form";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 import { Card, Chip, EmptyState, Field, Input, SectionTitle, Select } from "@/components/ui";
 import { requireContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -43,6 +45,7 @@ export default async function MembersPage() {
 
   return (
     <div className="grid gap-5">
+      <RealtimeRefresher tables={[{ table: "company_members", companyId: ctx.company.id }]} />
       <Card className="grid gap-4 px-5 py-6">
         <div className="grid gap-1">
           <SectionTitle>Add a team member</SectionTitle>
@@ -140,20 +143,17 @@ function MemberCard({
           This member owns the company and cannot be removed here.
         </p>
       ) : (
-        <ActionForm
-          action={removeMember}
-          resetKey={`${member.user_id}-remove`}
-          successMessage="Member removed."
-          className="gap-2"
-        >
-          <input type="hidden" name="userId" value={member.user_id} />
-          <button
-            type="submit"
-            className="inline-flex h-11 items-center rounded-full border border-absent-border bg-absent-soft px-5 text-sm font-semibold text-absent-ink transition-colors active:translate-y-px hover:bg-absent-soft/70"
-          >
-            Remove from company
-          </button>
-        </ActionForm>
+        <div className="pt-1">
+          <ConfirmDialog
+            label="Remove from company"
+            title="Remove this member?"
+            message="This member immediately loses access to the company and its attendance data."
+            action={removeMember}
+            hiddenFields={{ userId: member.user_id }}
+            confirmLabel="Remove"
+            successMessage="Member removed."
+          />
+        </div>
       )}
     </Card>
   );

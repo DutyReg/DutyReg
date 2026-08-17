@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import { requireContext } from "@/lib/auth";
-import { ChevronLeftIcon } from "@/components/icons";
+import { ChevronLeftIcon, GearIcon } from "@/components/icons";
 import { SettingsLink } from "@/components/settings-link";
 
 export default async function SettingsLayout({
@@ -23,8 +23,15 @@ export default async function SettingsLayout({
         >
           <ChevronLeftIcon size={16} /> Back to dashboard
         </Link>
-        <h1 className="text-[22px] font-semibold tracking-tight text-ink">Settings</h1>
-        <p className="text-sm text-muted">Manage your company, sites, workers and team.</p>
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-10 place-items-center rounded-full bg-surface-soft text-ink">
+            <GearIcon size={22} />
+          </span>
+          <div className="grid gap-0.5">
+            <h1 className="text-[22px] font-semibold tracking-tight text-ink">Settings</h1>
+            <p className="text-sm text-muted">Manage your company, sites, workers and team.</p>
+          </div>
+        </div>
       </div>
 
       <nav className="flex gap-2 overflow-x-auto pb-1" aria-label="Settings sections">

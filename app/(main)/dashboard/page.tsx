@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { ReportShare } from "@/components/report-share";
 import { Card, Chip, EmptyState, PageHeader, Select } from "@/components/ui";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
 import { requireContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -116,6 +117,7 @@ export default async function DashboardPage({
 
   return (
     <div className="grid gap-5">
+      <RealtimeRefresher tables={[{ table: "attendance_sheets", companyId: ctx.company.id }, { table: "attendance_entries" }]} />
       <PageHeader
         title={isToday ? "Today at a glance" : formatSheetDate(date)}
         description={site ? `Site: ${site.name}` : "No active sites yet"}

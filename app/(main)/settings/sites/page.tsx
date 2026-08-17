@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 
-import { addSite, renameSite, toggleSiteActive } from "@/app/actions/sites";
+import { addSite, deleteSite, renameSite } from "@/app/actions/sites";
 import { ActionForm } from "@/components/action-form";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 import { Card, Chip, EmptyState, Field, Input, SectionTitle } from "@/components/ui";
 import { requireContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -25,6 +27,7 @@ export default async function SitesPage() {
 
   return (
     <div className="grid gap-5">
+      <RealtimeRefresher tables={[{ table: "sites", companyId: ctx.company.id }]} />
       <Card className="grid gap-4 px-5 py-6">
         <div className="grid gap-1">
           <SectionTitle>Add a site</SectionTitle>
@@ -73,26 +76,15 @@ function SiteCard({ site }: { site: Site }) {
         </Field>
       </ActionForm>
 
-      <ActionForm
-        action={toggleSiteActive}
-        resetKey={`${site.id}-${site.active}`}
-        submitLabel={site.active ? "Deactivate site" : "Activate site"}
-        successMessage={site.active ? "Site deactivated." : "Site activated."}
-        className="gap-2 pt-1"
-      >
-        <input type="hidden" name="id" value={site.id} />
-        <input type="hidden" name="active" value={String(!site.active)} />
-        <button
-          type="submit"
-          className={`inline-flex h-11 items-center gap-2 rounded-full border px-5 text-sm font-semibold transition-colors active:translate-y-px ${
-            site.active
-              ? "border-absent-border bg-absent-soft text-absent-ink hover:bg-absent-soft/70"
-              : "border-present-border bg-present-soft text-present-ink hover:bg-present-soft/70"
-          }`}
-        >
-          {site.active ? "Deactivate" : "Activate"}
-        </button>
-      </ActionForm>
+      <div className="pt-1">
+        <ConfirmDialog
+          label="Delete site"
+          title="Delete this site?"
+          message="This permanently deletes the site and all of its attendance history. This cannot be undone."
+          action={deleteSite}
+          hiddenFields={{ id: site.id }}
+        />
+      </div>
     </Card>
   );
 }
