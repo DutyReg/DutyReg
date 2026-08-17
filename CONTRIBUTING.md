@@ -19,7 +19,7 @@ Rules:
 ## Getting started
 
 ```bash
-git clone git@github.com:ravijaanthony/Attendance.git
+https://github.com/ravijaanthony/Attendance.git
 cd Attendance
 git checkout dev
 npm install
