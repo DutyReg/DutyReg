@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 import { getContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -31,4 +32,28 @@ export async function updateCompanyName(formData: FormData): Promise<ActionResul
     .eq("id", ctx.company.id);
 
   return error ? { error: error.message } : { success: true };
+}
+
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** Owner updates the company-wide shift times used as attendance defaults. */
+export async function updateCompanyHours(formData: FormData): Promise<ActionResult> {
+  const ctx = await getContext();
+  if (!ctx?.company || ctx.role !== "owner") return { error: "Access denied." };
+
+  const start = String(formData.get("start_time") ?? "").trim();
+  const end = String(formData.get("end_time") ?? "").trim();
+  if (!TIME_PATTERN.test(start) || !TIME_PATTERN.test(end)) {
+    return { error: "Enter valid times, e.g. 08:00 and 17:00." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("companies")
+    .update({ start_time: start, end_time: end })
+    .eq("id", ctx.company.id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/settings");
+  return { success: true };
 }

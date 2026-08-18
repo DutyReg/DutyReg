@@ -3,7 +3,7 @@ import type { AttendanceEntry } from "@/lib/types";
 export interface ReportRow {
   worker_name: string;
   worker_code: string | null;
-  status: "present" | "absent" | "unknown";
+  status: "present" | "absent" | "late" | "unknown";
   in_time: string | null;
   out_time: string | null;
   note: string | null;
@@ -29,16 +29,22 @@ export function buildReportText(data: ReportData): string {
 
   const present = data.rows.filter((r) => r.status === "present").length;
   const absent = data.rows.filter((r) => r.status === "absent").length;
-  const unknown = data.rows.filter((r) => r.status === "unknown").length;
-  lines.push(`Present: ${present} | Absent: ${absent} | Not marked: ${unknown}`);
+  const late = data.rows.filter((r) => r.status === "late").length;
+  lines.push(`Present: ${present} | Absent: ${absent} | Late: ${late}`);
   lines.push("");
 
   data.rows.forEach((row, index) => {
     const status =
-      row.status === "present" ? "Present" : row.status === "absent" ? "Absent" : "Not marked";
+      row.status === "present"
+        ? "Present"
+        : row.status === "absent"
+          ? "Absent"
+          : row.status === "late"
+            ? "Late"
+            : "Not marked";
     const code = row.worker_code ? ` (${row.worker_code})` : "";
     const time =
-      row.status === "present"
+      row.status === "present" || row.status === "late"
         ? [row.in_time ? `In ${row.in_time}` : null, row.out_time ? `Out ${row.out_time}` : null]
             .filter(Boolean)
             .join(", ")
@@ -61,17 +67,20 @@ export function buildReportText(data: ReportData): string {
 export function countStatuses(entries: Pick<AttendanceEntry, "status">[]): {
   present: number;
   absent: number;
+  late: number;
   unknown: number;
 } {
   let present = 0;
   let absent = 0;
+  let late = 0;
   let unknown = 0;
   for (const entry of entries) {
     if (entry.status === "present") present += 1;
     else if (entry.status === "absent") absent += 1;
+    else if (entry.status === "late") late += 1;
     else unknown += 1;
   }
-  return { present, absent, unknown };
+  return { present, absent, late, unknown };
 }
 
 /** WhatsApp share URL for a report. */

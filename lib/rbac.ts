@@ -1,4 +1,4 @@
-import type { AttendanceStatus, Role } from "@/lib/types";
+import type { Role } from "@/lib/types";
 
 type Permission =
   | "manage_company"
@@ -34,8 +34,4 @@ export function canEditAttendance(role: Role | null): boolean {
 
 export function isOwner(role: Role | null): boolean {
   return role === "owner";
-}
-
-export function nextStatus(status: AttendanceStatus): AttendanceStatus {
-  return status === "present" ? "absent" : status === "absent" ? "unknown" : "present";
 }

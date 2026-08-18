@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { can, canEditAttendance, isOwner, nextStatus, PERMISSIONS } from "@/lib/rbac";
+import { can, canEditAttendance, isOwner, PERMISSIONS } from "@/lib/rbac";
 
 describe("PERMISSIONS matrix", () => {
   it("owner manages everything", () => {
@@ -31,13 +31,5 @@ describe("PERMISSIONS matrix", () => {
     expect(canEditAttendance(null)).toBe(false);
     expect(isOwner(null)).toBe(false);
     expect(can(null, "view_reports")).toBe(false);
-  });
-});
-
-describe("nextStatus cycle", () => {
-  it("cycles present -> absent -> unknown -> present", () => {
-    expect(nextStatus("present")).toBe("absent");
-    expect(nextStatus("absent")).toBe("unknown");
-    expect(nextStatus("unknown")).toBe("present");
   });
 });

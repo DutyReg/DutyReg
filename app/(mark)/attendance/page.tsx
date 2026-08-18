@@ -77,6 +77,8 @@ export default async function AttendancePage({
             note: e.note,
           }))}
           statusLabels={STATUS_LABELS}
+          defaultInTime={ctx.company.start_time?.slice(0, 5) ?? null}
+          defaultOutTime={ctx.company.end_time?.slice(0, 5) ?? null}
         />
       )}
     </div>

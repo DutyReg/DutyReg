@@ -7,10 +7,11 @@ import { useRouter } from "next/navigation";
 import { CheckIcon } from "@/components/icons";
 import { Btn, Chip, Select } from "@/components/ui";
 import { buildReportText, whatsAppLink, type ReportData } from "@/lib/report-builder";
+import { applyLateRule, toggleStatus } from "@/lib/status";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
 
-type RowStatus = "present" | "absent" | "unknown";
+type RowStatus = "present" | "absent" | "late" | "unknown";
 
 interface RowState {
   entryId: string | null;
@@ -50,6 +51,8 @@ export function AttendanceSheetClient({
   initialEntries,
   loadError,
   statusLabels,
+  defaultInTime,
+  defaultOutTime,
 }: {
   sheetId: string;
   siteId: string;
@@ -61,6 +64,8 @@ export function AttendanceSheetClient({
   initialEntries: EntryInput[];
   loadError: string | null;
   statusLabels: Record<RowStatus, string>;
+  defaultInTime: string | null;
+  defaultOutTime: string | null;
 }) {
   const [rows, setRows] = useState<Record<string, RowState>>(() => {
     const map: Record<string, RowState> = {};
@@ -205,10 +210,51 @@ export function AttendanceSheetClient({
         const current = prev[worker.id];
         next[worker.id] =
           current.status === "unknown"
-            ? { ...current, status: "present" }
+            ? {
+                ...current,
+                status: "present",
+                in_time: current.in_time ?? defaultInTime,
+                out_time: current.out_time ?? defaultOutTime,
+              }
             : current;
       }
       return next;
+    });
+    scheduleSave();
+  }
+
+  function handleStatusClick(workerId: string, clicked: Exclude<RowStatus, "unknown">) {
+    setRows((prev) => {
+      const current = prev[workerId];
+      const status = toggleStatus(current.status, clicked);
+      const patch: Partial<RowState> = { status };
+      if (status === "present") {
+        patch.in_time = current.in_time ?? defaultInTime;
+        patch.out_time = current.out_time ?? defaultOutTime;
+      } else if (status === "late") {
+        patch.in_time = current.in_time ?? null;
+        patch.out_time = current.out_time ?? defaultOutTime;
+      } else {
+        patch.in_time = null;
+        patch.out_time = null;
+      }
+      return { ...prev, [workerId]: { ...current, ...patch } };
+    });
+    scheduleSave();
+  }
+
+  function handleTimeChange(
+    workerId: string,
+    field: "in_time" | "out_time",
+    value: string | null,
+  ) {
+    setRows((prev) => {
+      const current = prev[workerId];
+      const patch: Partial<RowState> = { [field]: value };
+      if (field === "in_time") {
+        patch.status = applyLateRule(current.status, value, defaultInTime);
+      }
+      return { ...prev, [workerId]: { ...current, ...patch } };
     });
     scheduleSave();
   }
@@ -239,6 +285,7 @@ export function AttendanceSheetClient({
   const hasAnything = workers.length > 0;
   const presentCount = Object.values(rows).filter((r) => r.status === "present").length;
   const absentCount = Object.values(rows).filter((r) => r.status === "absent").length;
+  const lateCount = Object.values(rows).filter((r) => r.status === "late").length;
 
   async function handleCopy() {
     await navigator.clipboard.writeText(reportText);
@@ -272,6 +319,7 @@ export function AttendanceSheetClient({
         <div className="flex items-center gap-2">
           <span className="text-sm tabular-nums text-muted">
             <span className="font-semibold text-present">{presentCount}</span> ·{" "}
+            <span className="font-semibold text-warning-ink">{lateCount}</span> ·{" "}
             <span className="font-semibold text-absent">{absentCount}</span>
           </span>
           {saveChip}
@@ -307,7 +355,9 @@ export function AttendanceSheetClient({
               worker={worker}
               row={rows[worker.id]}
               statusLabels={statusLabels}
-              onChange={(patch) => setRow(worker.id, patch)}
+              onStatus={(clicked) => handleStatusClick(worker.id, clicked)}
+              onTime={(field, value) => handleTimeChange(worker.id, field, value)}
+              onNote={(value) => setRow(worker.id, { note: value })}
             />
           ))}
         </ul>
@@ -380,14 +430,20 @@ function WorkerRowCard({
   worker,
   row,
   statusLabels,
-  onChange,
+  onStatus,
+  onTime,
+  onNote,
 }: {
   index: number;
   worker: WorkerInput;
   row: RowState;
   statusLabels: Record<RowStatus, string>;
-  onChange: (patch: Partial<RowState>) => void;
+  onStatus: (clicked: Exclude<RowStatus, "unknown">) => void;
+  onTime: (field: "in_time" | "out_time", value: string | null) => void;
+  onNote: (value: string | null) => void;
 }) {
+  const timed = row.status === "present" || row.status === "late";
+
   return (
     <li className="rounded-xl border border-border bg-surface">
       <div className="flex items-center justify-between gap-3 px-3.5 pt-3">
@@ -409,44 +465,46 @@ function WorkerRowCard({
           active={row.status === "present"}
           activeClass="bg-present text-white"
           label={statusLabels.present}
-          onClick={() => onChange({ status: "present" })}
+          onClick={() => onStatus("present")}
         />
         <StatusButton
           active={row.status === "absent"}
           activeClass="bg-absent text-white"
           label={statusLabels.absent}
-          onClick={() => onChange({ status: "absent" })}
+          onClick={() => onStatus("absent")}
         />
         <StatusButton
-          active={row.status === "unknown"}
-          activeClass="bg-zinc-300 text-zinc-900 dark:bg-zinc-600 dark:text-zinc-100"
-          label="Not marked"
-          onClick={() => onChange({ status: "unknown" })}
+          active={row.status === "late"}
+          activeClass="bg-warning text-warning-ink"
+          label={statusLabels.late}
+          onClick={() => onStatus("late")}
         />
       </div>
 
       <div className="grid gap-3 border-t border-border px-3.5 py-3">
-        <div className="grid grid-cols-2 gap-3">
-          <TimeField
-            label="In time"
-            value={row.in_time}
-            disabled={row.status !== "present"}
-            onChange={(value) => onChange({ in_time: value })}
-          />
-          <TimeField
-            label="Out time"
-            value={row.out_time}
-            disabled={row.status !== "present"}
-            onChange={(value) => onChange({ out_time: value })}
-          />
-        </div>
+        {timed ? (
+          <div className="grid grid-cols-2 gap-3">
+            <TimeField
+              label={row.status === "late" ? "In time (late arrival)" : "In time"}
+              value={row.in_time}
+              disabled={!timed}
+              onChange={(value) => onTime("in_time", value)}
+            />
+            <TimeField
+              label="Out time"
+              value={row.out_time}
+              disabled={!timed}
+              onChange={(value) => onTime("out_time", value)}
+            />
+          </div>
+        ) : null}
         <label className="grid gap-1">
           <span className="text-xs font-medium text-muted">Note (optional)</span>
           <input
             type="text"
             value={row.note ?? ""}
             placeholder="Left early, half day, etc."
-            onChange={(e) => onChange({ note: e.target.value })}
+            onChange={(e) => onNote(e.target.value || null)}
             className="h-11 w-full rounded-lg border border-border bg-surface-soft px-3.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/60 dark:bg-surface-soft"
           />
         </label>

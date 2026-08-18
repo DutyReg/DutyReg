@@ -35,7 +35,7 @@ const getMembership = cache(
     const { data } = await supabase
       .from("company_members")
       .select(
-        "id, company_id, user_id, role, created_at, companies(id, name, created_at)",
+        "id, company_id, user_id, role, created_at, companies(id, name, start_time, end_time, created_at)",
       )
       .eq("user_id", user.id)
       .maybeSingle<MembershipRow>();

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { updateCompanyName } from "@/app/actions/company";
+import { updateCompanyHours, updateCompanyName } from "@/app/actions/company";
 import { ActionForm } from "@/components/action-form";
 import { Card, Field, Input, SectionTitle } from "@/components/ui";
 import { requireContext } from "@/lib/auth";
@@ -31,6 +31,36 @@ export default async function SettingsPage() {
               maxLength={120}
             />
           </Field>
+        </ActionForm>
+      </Card>
+
+      <Card className="grid gap-4 px-5 py-6">
+        <div className="grid gap-1">
+          <SectionTitle>Work hours</SectionTitle>
+          <p className="text-sm text-muted">
+            The company-wide shift times. Marking attendance starts every worker
+            at these times; an in-time later than the start time is recorded as Late.
+          </p>
+        </div>
+        <ActionForm action={updateCompanyHours}>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Start time">
+              <Input
+                name="start_time"
+                type="time"
+                defaultValue={ctx.company.start_time?.slice(0, 5)}
+                required
+              />
+            </Field>
+            <Field label="End time">
+              <Input
+                name="end_time"
+                type="time"
+                defaultValue={ctx.company.end_time?.slice(0, 5)}
+                required
+              />
+            </Field>
+          </div>
         </ActionForm>
       </Card>
 

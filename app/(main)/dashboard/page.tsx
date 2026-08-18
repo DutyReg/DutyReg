@@ -195,8 +195,9 @@ export default async function DashboardPage({
         />
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <SummaryCard label="Present" value={counts.present} tone="positive" />
+            <SummaryCard label="Late" value={counts.late} tone="warning" />
             <SummaryCard label="Absent" value={counts.absent} tone="negative" />
             <SummaryCard label="Not marked" value={counts.unknown} tone="neutral" />
           </div>
@@ -234,12 +235,13 @@ function SummaryCard({
 }: {
   label: string;
   value: number;
-  tone: "positive" | "negative" | "neutral";
+  tone: "positive" | "negative" | "neutral" | "warning";
 }) {
   const styles = {
     positive: "text-present",
     negative: "text-absent",
     neutral: "text-ink",
+    warning: "text-warning-ink",
   };
   return (
     <Card className="px-4 py-4">
@@ -253,7 +255,8 @@ function WorkerRow({ row }: { row: ReportRow }) {
   const statusChip = {
     present: <Chip tone="positive">Present</Chip>,
     absent: <Chip tone="negative">Absent</Chip>,
-    unknown: <Chip tone="warning">Not marked</Chip>,
+    late: <Chip tone="warning">Late</Chip>,
+    unknown: <Chip tone="neutral">Not marked</Chip>,
   }[row.status];
 
   return (

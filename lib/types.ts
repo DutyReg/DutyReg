@@ -1,10 +1,12 @@
 export type Role = "owner" | "supervisor" | "viewer";
 
-export type AttendanceStatus = "present" | "absent" | "unknown";
+export type AttendanceStatus = "present" | "absent" | "late" | "unknown";
 
 export interface Company {
   id: string;
   name: string;
+  start_time: string;
+  end_time: string;
   created_at: string;
 }
 
