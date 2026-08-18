@@ -1,4 +1,4 @@
-# Contributing to DayMark
+# Contributing to DutyReg
 
 Thanks for contributing. This project is GPL-3.0 licensed — by contributing you agree to the license terms in `LICENSE`.
 

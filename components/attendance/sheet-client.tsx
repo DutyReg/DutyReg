@@ -143,7 +143,7 @@ export function AttendanceSheetClient({
 
     if (error) {
       setSaveState("unsaved");
-      console.error("DayMark save failed", error.message);
+      console.error("DutyReg save failed", error.message);
       return false;
     }
 
@@ -272,7 +272,7 @@ export function AttendanceSheetClient({
       };
     });
     return {
-      company_name: "DayMark",
+      company_name: "DutyReg",
       site_name: siteName,
       sheet_date: date,
       rows: entryRows,
@@ -387,7 +387,7 @@ export function AttendanceSheetClient({
             </Btn>
             <Btn
               variant="secondary"
-              onClick={() => navigator.share?.({ title: "DayMark attendance report", text: reportText }).catch(() => {})}
+              onClick={() => navigator.share?.({ title: "DutyReg attendance report", text: reportText }).catch(() => {})}
             >
               More options
             </Btn>

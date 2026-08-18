@@ -1,6 +1,6 @@
-# DayMark — multi-stage build for the standalone Next.js server.
-# Build:      docker build -t daymark .
-# Run:        docker run --rm -p 3000:3000 --env-file .env.local daymark
+# DutyReg — multi-stage build for the standalone Next.js server.
+# Build:      docker build -t dutyreg .
+# Run:        docker run --rm -p 3000:3000 --env-file .env.local dutyreg
 
 FROM node:22-alpine AS deps
 WORKDIR /app
@@ -21,13 +21,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-RUN addgroup --system --gid 1001 daymark \
-  && adduser --system --uid 1001 daymark
-USER daymark
+RUN addgroup --system --gid 1001 dutyreg \
+  && adduser --system --uid 1001 dutyreg
+USER dutyreg
 
-COPY --from=builder --chown=daymark:daymark /app/public ./public
-COPY --from=builder --chown=daymark:daymark /app/.next/standalone ./
-COPY --from=builder --chown=daymark:daymark /app/.next/static ./.next/static
+COPY --from=builder --chown=dutyreg:dutyreg /app/public ./public
+COPY --from=builder --chown=dutyreg:dutyreg /app/.next/standalone ./
+COPY --from=builder --chown=dutyreg:dutyreg /app/.next/static ./.next/static
 
 EXPOSE 3000
 CMD ["node", "server.js"]

@@ -8,7 +8,7 @@ export function ConfigNeeded() {
         <BrandLockup />
         <div className="grid gap-1.5">
           <h1 className="text-lg font-semibold tracking-tight text-ink">
-            DayMark needs setup
+            DutyReg needs setup
           </h1>
           <p className="text-sm text-muted">
             Supabase credentials are not configured yet. Copy <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs dark:bg-zinc-800">.env.example</code>{" "}

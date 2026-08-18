@@ -1,4 +1,4 @@
-# DayMark — product context
+# DutyReg — product context
 
 Status: pilot MVP under active build.
 

@@ -12,7 +12,7 @@ export function AuthPanel({ oauthError }: { oauthError?: string | null }) {
     <div className="grid gap-5">
       <div className="grid gap-2">
         <h2 className="text-lg font-semibold tracking-tight text-ink">
-          {mode === "signin" ? "Sign in to DayMark" : "Create your account"}
+          {mode === "signin" ? "Sign in to DutyReg" : "Create your account"}
         </h2>
         <p className="text-sm text-muted">
           {mode === "signin"

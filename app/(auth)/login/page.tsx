@@ -26,7 +26,7 @@ export default async function LoginPage({
       <div className="grid justify-items-center gap-3 text-center">
         <BrandMark />
         <div className="grid gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-ink">DayMark</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">DutyReg</h1>
           <p className="max-w-[30ch] text-sm text-muted">
             Attendance logging for small businesses. Mark the day, see it instantly.
           </p>
