@@ -1,9 +1,9 @@
-name: CI
+name: Quality, Security and Build
 
 on:
   pull_request:
   push:
-    branches: [dev, main]
+    branches: [dev, stable, main]
 
 jobs:
   checks:
