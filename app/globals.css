@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Light Mode - Based on your palette */
+  --background: #e9eef6;
+  --surface: #f4f8fd;
+  --surface-soft: #eef2f9;
+  --border: #d3e1f0;
+  --border-strong: #b7c9e0;
+  --ink: #0f1720;
+  --ink-soft: #2d3a47;
+  --muted: #6b7280;
+  --inverse-text: #ffffff;
+
+  /* Primary */
+  --primary: #38bcf8;
+  --primary-soft: #e0f4ff;
+  --primary-ink: #0e7490;
+  --primary-border: #7dd3fc;
+
+  /* Success (Present) */
+  --present: #15803d;
+  --present-soft: #dcfce7;
+  --present-ink: #166534;
+  --present-border: #86efac;
+
+  /* Warning */
+  --warning: #ffbc5e;
+  --warning-soft: #fff8e1;
+  --warning-ink: #92400e;
+  --warning-border: #fcd34d;
+
+  /* Danger (Absent) */
+  --absent: #b91c1c;
+  --absent-soft: #fee2e2;
+  --absent-ink: #991b1b;
+  --absent-border: #fca5a5;
+
+  /* Info */
+  --info: #67d1ff;
+  --info-soft: #e0f2fe;
+  --info-ink: #075985;
+  --info-border: #7dd3fc;
+}
+
+.dark {
+  /* Dark Mode - Based on your palette */
+  --background: #0a0f12;
+  --surface: #102025;
+  --surface-soft: #15282e;
+  --border: #1e3a3f;
+  --border-strong: #2a4a50;
+  --ink: #e6f3ff;
+  --ink-soft: #b8d4e8;
+  --muted: #94a3b8;
+  --inverse-text: #0f1720;
+
+  /* Primary */
+  --primary: #38a9f6;
+  --primary-soft: #0c2a3a;
+  --primary-ink: #7dd3fc;
+  --primary-border: #0ea5e9;
+
+  /* Success (Present) */
+  --present: #16a34a;
+  --present-soft: #052e16;
+  --present-ink: #86efac;
+  --present-border: #16a34a;
+
+  /* Warning */
+  --warning: #ffbc5e;
+  --warning-soft: #3a2400;
+  --warning-ink: #fcd34d;
+  --warning-border: #f59e0b;
+
+  /* Danger (Absent) */
+  --absent: #dc2626;
+  --absent-soft: #450a0a;
+  --absent-ink: #fca5a5;
+  --absent-border: #b91c1c;
+
+  /* Info */
+  --info: #67d1ff;
+  --info-soft: #0c2a3a;
+  --info-ink: #7dd3fc;
+  --info-border: #0ea5e9;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-inverse-text: var(--inverse-text);
+
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-ink: var(--primary-ink);
+  --color-primary-border: var(--primary-border);
+
+  --color-present: var(--present);
+  --color-present-soft: var(--present-soft);
+  --color-present-ink: var(--present-ink);
+  --color-present-border: var(--present-border);
+
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-ink: var(--warning-ink);
+  --color-warning-border: var(--warning-border);
+
+  --color-absent: var(--absent);
+  --color-absent-soft: var(--absent-soft);
+  --color-absent-ink: var(--absent-ink);
+  --color-absent-border: var(--absent-border);
+
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-ink: var(--info-ink);
+  --color-info-border: var(--info-border);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+input[type="time"] {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
