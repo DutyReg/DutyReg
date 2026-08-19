@@ -22,7 +22,7 @@ export default async function OnboardingPage() {
       <Card className="grid gap-4 px-5 py-6">
         <SectionTitle>Create your company</SectionTitle>
         <p className="text-sm text-muted">
-          Start your own company on DayMark and become its owner. You will be able
+          Start your own company on DutyReg and become its owner. You will be able
           to add sites, workers and team members.
         </p>
         <ActionForm

@@ -50,7 +50,7 @@ export default async function MembersPage() {
         <div className="grid gap-1">
           <SectionTitle>Add a team member</SectionTitle>
           <p className="text-sm text-muted">
-            The person must sign up on DayMark first. You can add them by email afterwards.
+            The person must sign up on DutyReg first. You can add them by email afterwards.
           </p>
         </div>
         <ActionForm action={addMember}>

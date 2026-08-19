@@ -43,7 +43,7 @@ export function ReportShare({
 
   function handleShare() {
     if (!navigator.share) return;
-    navigator.share({ title: "DayMark attendance report", text }).catch(() => {});
+    navigator.share({ title: "DutyReg attendance report", text }).catch(() => {});
   }
 
   return (

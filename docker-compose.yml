@@ -1,7 +1,7 @@
 services:
-  daymark:
+  dutyreg:
     build: .
-    container_name: daymark
+    container_name: dutyreg
     ports:
       - "3000:3000"
     env_file:

@@ -1,8 +1,12 @@
-# DayMark
+# DutyReg
 
-Attendance logging for small businesses in Sri Lanka. Supervisor-first, mobile-first, low data, cheap-Android friendly. The supervisor marks workers present/absent on a daily sheet; owners and viewers see results instantly and reports can be shared over WhatsApp.
+<p align="center">
+  <img src="public/icons/webicon.png" alt="DutyReg logo" width="96" height="96" />
+</p>
 
-DayMark is the pilot implementation of the AttendancePilot MVP described in `pilot-project.md` / `pilot-project-plan.md` (kept at the workspace root — this app lives in `Attendance/`).
+Duty registry for small businesses in Sri Lanka. Supervisor-first, mobile-first, low data, cheap-Android friendly. The supervisor marks workers present/absent on a daily sheet; owners and viewers see results instantly and reports can be shared over WhatsApp.
+
+DutyReg is the pilot implementation of the AttendancePilot MVP described in `pilot-project.md` / `pilot-project-plan.md` (kept at the workspace root — this app lives in `Attendance/`).
 
 ## Features
 
@@ -51,7 +55,7 @@ See `CONTRIBUTING.md` for the workflow.
    ```bash
    supabase db push --password "$YOUR_DB_PASSWORD"
    ```
-4. For demo data, create an auth user with email `demo@daymark.app` (Authentication → Users → Add user), then run `supabase/seed.sql` against the database.
+4. For demo data, create an auth user with email `demo@dutyreg.app` (Authentication → Users → Add user), then run `supabase/seed.sql` against the database.
 5. Enable **Google login**: Authentication → Providers → Google. Set up an OAuth client in Google Cloud Console with the redirect URL `https://<your-domain>/auth/callback` (use `http://localhost:3000/auth/callback` for local dev).
 6. Email/password is enabled by default (Authorization → Providers → Email). For the pilot, disable "Confirm email" if you want instant sign-in without a mail server.
 
@@ -84,8 +88,8 @@ npm run dev          # http://localhost:3000
 ## Docker
 
 ```bash
-docker build -t daymark .
-docker run --rm -p 3000:3000 --env-file .env.local daymark
+docker build -t dutyreg .
+docker run --rm -p 3000:3000 --env-file .env.local dutyreg
 # or
 docker compose up --build
 ```

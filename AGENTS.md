@@ -8,9 +8,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# DayMark — project conventions
+# DutyReg — project conventions
 
-Attendance logging app. Next.js 16 (App Router) + Supabase (Postgres, Auth, RLS, Realtime). See `README.md` (setup, features) and `CONTRIBUTING.md` (branch strategy, commit rules).
+Duty registry app. Next.js 16 (App Router) + Supabase (Postgres, Auth, RLS, Realtime). See `README.md` (setup, features) and `CONTRIBUTING.md` (branch strategy, commit rules).
 
 ## Commands
 

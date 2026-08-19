@@ -21,7 +21,7 @@ export interface ReportData {
 /** Plain, WhatsApp-friendly text report. */
 export function buildReportText(data: ReportData): string {
   const lines: string[] = [];
-  lines.push("DayMark Attendance Report");
+  lines.push("DutyReg Attendance Report");
   lines.push(`Company: ${data.company_name}`);
   lines.push(`Site: ${data.site_name}`);
   lines.push(`Date: ${data.sheet_date}`);
@@ -58,7 +58,7 @@ export function buildReportText(data: ReportData): string {
     const who = data.updated_by_name ? ` by ${data.updated_by_name}` : "";
     lines.push(`Last updated: ${data.updated_at}${who}`);
   }
-  lines.push("Shared via DayMark");
+  lines.push("Shared via DutyReg");
 
   return lines.join("\n");
 }

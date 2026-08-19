@@ -60,6 +60,7 @@ export default async function AttendancePage({
           siteId={site.id}
           date={date}
           siteName={site.name}
+          companyName={ctx.company.name}
           userId={ctx.user.id}
           sites={siteList.map((s) => ({ id: s.id, name: s.name }))}
           loadError={bundle ? null : "Could not prepare today's sheet. Check your connection and refresh."}

@@ -16,12 +16,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "DayMark — Attendance made simple",
-    template: "%s · DayMark",
+    default: "DutyReg — duty registry made simple",
+    template: "%s · DutyReg",
   },
   description:
     "Simple attendance logging for small businesses. Supervisors mark the day, owners see it instantly.",
-  applicationName: "DayMark",
+  applicationName: "DutyReg",
 };
 
 export const viewport: Viewport = {

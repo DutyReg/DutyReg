@@ -24,7 +24,7 @@ const baseReport: ReportData = {
 describe("buildReportText", () => {
   it("includes the header lines with company, site and date", () => {
     const text = buildReportText(baseReport);
-    expect(text).toContain("DayMark Attendance Report");
+    expect(text).toContain("DutyReg Attendance Report");
     expect(text).toContain("Company: Sunrise Cleaning");
     expect(text).toContain("Site: Colombo Main Site");
     expect(text).toContain("Date: 2026-08-13");

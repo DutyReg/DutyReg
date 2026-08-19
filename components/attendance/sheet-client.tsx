@@ -44,6 +44,7 @@ export function AttendanceSheetClient({
   sheetId,
   siteId,
   siteName,
+  companyName,
   date,
   userId,
   sites,
@@ -57,6 +58,7 @@ export function AttendanceSheetClient({
   sheetId: string;
   siteId: string;
   siteName: string;
+  companyName: string;
   date: string;
   userId: string;
   sites: { id: string; name: string }[];
@@ -143,7 +145,7 @@ export function AttendanceSheetClient({
 
     if (error) {
       setSaveState("unsaved");
-      console.error("DayMark save failed", error.message);
+      console.error("DutyReg save failed", error.message);
       return false;
     }
 
@@ -272,14 +274,14 @@ export function AttendanceSheetClient({
       };
     });
     return {
-      company_name: "DayMark",
+      company_name: companyName,
       site_name: siteName,
       sheet_date: date,
       rows: entryRows,
       updated_at: null,
       updated_by_name: null,
     };
-  }, [rows, workers, siteName, date]);
+  }, [rows, workers, siteName, companyName, date]);
 
   const reportText = useMemo(() => buildReportText(report), [report]);
   const hasAnything = workers.length > 0;
@@ -387,7 +389,7 @@ export function AttendanceSheetClient({
             </Btn>
             <Btn
               variant="secondary"
-              onClick={() => navigator.share?.({ title: "DayMark attendance report", text: reportText }).catch(() => {})}
+              onClick={() => navigator.share?.({ title: "DutyReg attendance report", text: reportText }).catch(() => {})}
             >
               More options
             </Btn>
