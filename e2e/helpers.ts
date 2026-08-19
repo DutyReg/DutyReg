@@ -19,11 +19,19 @@ export async function signUp(page: Page, email: string, password = PASSWORD) {
   await expect(page).toHaveURL(/\/onboarding/, { timeout: 15_000 });
 }
 
-export async function signIn(page: Page, email: string, password = PASSWORD) {
+export async function signIn(
+  page: Page,
+  email: string,
+  password = PASSWORD,
+  destination: RegExp | null = /\/dashboard/,
+) {
   await page.goto("/login");
   await page.locator('input[name="email"]').fill(email);
   await page.locator('input[name="password"]').fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
+  if (destination) {
+    await expect(page).toHaveURL(destination, { timeout: 15_000 });
+  }
 }
 
 export async function createCompany(page: Page, name: string) {
@@ -45,7 +53,7 @@ export async function setWorkHours(page: Page, start: string, end: string) {
   await hoursForm.locator('input[name="start_time"]').fill(start);
   await hoursForm.locator('input[name="end_time"]').fill(end);
   await hoursForm.getByRole("button", { name: "Save" }).click();
-  await expect(hoursForm.getByText("Saved.", { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(hoursForm.getByText("Saved", { exact: true })).toBeVisible({ timeout: 15_000 });
 }
 
 export async function addSite(page: Page, name: string) {

@@ -26,7 +26,7 @@ test.describe("attendance marking", () => {
     // late rule (in-time after 08:00 is recorded as Late).
     await setWorkHours(page, "08:00", "17:00");
     await page.getByRole("link", { name: "Mark" }).click();
-    await expect(page).toHaveURL(/\/attendance/);
+    await expect(page).toHaveURL(/\/attendance/, { timeout: 15_000 });
 
     // Mark all present fills both workers with default times.
     await page.getByRole("button", { name: "Mark all present" }).click();
@@ -52,7 +52,7 @@ test.describe("attendance marking", () => {
 
     // Dashboard reflects the day's counts.
     await page.getByRole("link", { name: "Today" }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
     const nimalRow = page.locator("li").filter({ has: page.getByText("Nimal Perera", { exact: true }) });
     await expect(nimalRow.getByText("Late", { exact: true })).toBeVisible();
     const kumariRow = page.locator("li").filter({ has: page.getByText("Kumari Silva", { exact: true }) });

@@ -34,7 +34,7 @@ test.describe("role-based access", () => {
     await ownerPage.locator('form input[name="email"]').fill(memberEmail);
     await ownerPage.locator('form select[name="role"]').selectOption("viewer");
     await ownerPage.locator('form:has(input[name="email"])').getByRole("button", { name: "Save" }).click();
-    await expect(ownerPage.locator('form:has(input[name="email"])').getByText("Saved.", { exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(ownerPage.locator('form:has(input[name="email"])').getByText("Saved", { exact: true })).toBeVisible({ timeout: 15_000 });
 
     // Member is still signed in from signUp. As a viewer they land on the
     // dashboard directly (no onboarding).
@@ -44,9 +44,9 @@ test.describe("role-based access", () => {
     // Viewer: no Settings in the nav; /settings and /attendance redirect away.
     await expect(memberPage.getByRole("link", { name: "Settings" })).toHaveCount(0);
     await memberPage.goto("/settings");
-    await expect(memberPage).toHaveURL(/\/dashboard/);
+    await expect(memberPage).toHaveURL(/\/dashboard/, { timeout: 15_000 });
     await memberPage.goto("/attendance");
-    await expect(memberPage).toHaveURL(/\/dashboard/);
+    await expect(memberPage).toHaveURL(/\/dashboard/, { timeout: 15_000 });
 
     // Owner adds a site, a worker and marks the day so the viewer has a real report.
     await addSite(ownerPage, "HQ Office");
@@ -68,14 +68,14 @@ test.describe("role-based access", () => {
     });
     await changeRoleForm.locator('select[name="role"]').selectOption("supervisor");
     await changeRoleForm.getByRole("button", { name: "Change role" }).click();
-    await expect(changeRoleForm.getByText("Saved.", { exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(changeRoleForm.getByText("Saved", { exact: true })).toBeVisible({ timeout: 15_000 });
 
     // Supervisor: can now mark attendance, but settings still redirect.
     await memberPage.getByRole("link", { name: "Mark" }).click();
-    await expect(memberPage).toHaveURL(/\/attendance/);
+    await expect(memberPage).toHaveURL(/\/attendance/, { timeout: 15_000 });
     await expect(memberPage.getByRole("button", { name: "Mark all present" })).toBeVisible();
     await memberPage.goto("/settings");
-    await expect(memberPage).toHaveURL(/\/dashboard/);
+    await expect(memberPage).toHaveURL(/\/dashboard/, { timeout: 15_000 });
 
     await ownerContext.close();
     await memberContext.close();
@@ -103,8 +103,10 @@ test.describe("role-based access", () => {
     await ownerPage.locator('form input[name="email"]').fill(memberEmail);
     await ownerPage.locator('form select[name="role"]').selectOption("viewer");
     await ownerPage.locator('form:has(input[name="email"])').getByRole("button", { name: "Save" }).click();
-    await expect(ownerPage.locator('form:has(input[name="email"])').getByText("Saved.", { exact: true })).toBeVisible({ timeout: 15_000 });
-    await expect(ownerPage.getByText(memberEmail, { exact: true })).toBeVisible();
+    await expect(ownerPage.locator('form:has(input[name="email"])').getByText("Saved", { exact: true })).toBeVisible({ timeout: 15_000 });
+    // The members list re-renders via the action's RSC payload; dev-mode
+    // recompilation can exceed the default 5s, so wait up to 20s.
+    await expect(ownerPage.getByText(memberEmail, { exact: true })).toBeVisible({ timeout: 20_000 });
 
     await ownerContext.close();
     await memberContext.close();

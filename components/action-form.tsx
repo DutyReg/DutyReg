@@ -10,7 +10,7 @@ export function ActionForm({
   children,
   className = "",
   submitLabel,
-  successMessage = "Saved.",
+  successMessage = "Saved",
   resetKey,
 }: {
   action: (formData: FormData) => Promise<ActionResult>;
