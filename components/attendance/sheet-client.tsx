@@ -44,6 +44,7 @@ export function AttendanceSheetClient({
   sheetId,
   siteId,
   siteName,
+  companyName,
   date,
   userId,
   sites,
@@ -57,6 +58,7 @@ export function AttendanceSheetClient({
   sheetId: string;
   siteId: string;
   siteName: string;
+  companyName: string;
   date: string;
   userId: string;
   sites: { id: string; name: string }[];
@@ -272,14 +274,14 @@ export function AttendanceSheetClient({
       };
     });
     return {
-      company_name: "DutyReg",
+      company_name: companyName,
       site_name: siteName,
       sheet_date: date,
       rows: entryRows,
       updated_at: null,
       updated_by_name: null,
     };
-  }, [rows, workers, siteName, date]);
+  }, [rows, workers, siteName, companyName, date]);
 
   const reportText = useMemo(() => buildReportText(report), [report]);
   const hasAnything = workers.length > 0;
