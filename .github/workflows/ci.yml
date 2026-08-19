@@ -49,7 +49,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx --no-install playwright install --with-deps chromium
-      - run: npm run e2e
+      - run: npm run test:e2e
 
   build:
     runs-on: ubuntu-latest
