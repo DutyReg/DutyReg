@@ -12,6 +12,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Duty registry app. Next.js 16 (App Router) + Supabase (Postgres, Auth, RLS, Realtime). See `README.md` (setup, features) and `CONTRIBUTING.md` (branch strategy, commit rules).
 
+# DayMark — project conventions
+
+Attendance logging app. Next.js 16 (App Router) + Supabase (Postgres, Auth, RLS, Realtime). See `README.md` (setup, features) and `CONTRIBUTING.md` (branch strategy, commit rules).
+
+
 ## Commands
 
 - `npm run dev` — dev server on :3000 (Turbopack)
