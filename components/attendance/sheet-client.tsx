@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { CheckIcon } from "@/components/icons";
 import { Btn, Chip, Select } from "@/components/ui";
+import { createAutosave, type Autosave, type SaveState } from "@/components/attendance/autosave-core";
 import { buildReportText, whatsAppLink, type ReportData } from "@/lib/report-builder";
 import { applyLateRule, toggleStatus } from "@/lib/status";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
@@ -36,14 +37,13 @@ interface EntryInput {
   note: string | null;
 }
 
-type SaveState = "saved" | "saving" | "unsaved";
-
 const SAVE_DELAY_MS = 900;
 
 export function AttendanceSheetClient({
   sheetId,
   siteId,
   siteName,
+  companyName,
   date,
   userId,
   sites,
@@ -57,6 +57,7 @@ export function AttendanceSheetClient({
   sheetId: string;
   siteId: string;
   siteName: string;
+  companyName: string;
   date: string;
   userId: string;
   sites: { id: string; name: string }[];
@@ -91,8 +92,9 @@ export function AttendanceSheetClient({
   const router = useRouter();
 
   const rowsRef = useRef(rows);
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dirtyRef = useRef(false);
+  const autosaveRef = useRef<Autosave | null>(null);
+  const saveRef = useRef<() => Promise<boolean>>(async () => true);
+  const keepaliveRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     rowsRef.current = rows;
@@ -104,10 +106,7 @@ export function AttendanceSheetClient({
   }
 
   function scheduleSave() {
-    dirtyRef.current = true;
-    setSaveState("unsaved");
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => void flush(), SAVE_DELAY_MS);
+    autosaveRef.current?.scheduleSave();
   }
 
   const buildPayload = useCallback(
@@ -126,13 +125,7 @@ export function AttendanceSheetClient({
     [sheetId],
   );
 
-  const flush = useCallback(async function flush() {
-    if (saveTimer.current) {
-      clearTimeout(saveTimer.current);
-      saveTimer.current = null;
-    }
-    setSaveState("saving");
-
+  const flush = useCallback(async function flush(): Promise<boolean> {
     const supabase = createClient();
     const now = new Date().toISOString();
     const payload = buildPayload(now);
@@ -142,7 +135,6 @@ export function AttendanceSheetClient({
       .upsert(payload, { onConflict: "sheet_id,worker_id" });
 
     if (error) {
-      setSaveState("unsaved");
       console.error("DutyReg save failed", error.message);
       return false;
     }
@@ -152,8 +144,6 @@ export function AttendanceSheetClient({
       .update({ updated_at: now, updated_by: userId })
       .eq("id", sheetId);
 
-    dirtyRef.current = false;
-    setSaveState("saved");
     return true;
   }, [buildPayload, sheetId, userId]);
 
@@ -181,27 +171,30 @@ export function AttendanceSheetClient({
   }, [buildPayload]);
 
   useEffect(() => {
-    return () => {
-      if (saveTimer.current) {
-        clearTimeout(saveTimer.current);
-        saveTimer.current = null;
-      }
-      if (dirtyRef.current) void flush();
-    };
-  }, [flush]);
+    saveRef.current = flush;
+    keepaliveRef.current = flushWithKeepalive;
+  }, [flush, flushWithKeepalive]);
+
+  useEffect(() => {
+    if (autosaveRef.current === null) {
+      autosaveRef.current = createAutosave({
+        delayMs: SAVE_DELAY_MS,
+        save: () => saveRef.current(),
+        finalSave: () => keepaliveRef.current(),
+        onStateChange: setSaveState,
+      });
+    }
+    return () => autosaveRef.current?.dispose();
+  }, []);
 
   useEffect(() => {
     function onPageHide() {
-      if (!dirtyRef.current) return;
-      if (saveTimer.current) {
-        clearTimeout(saveTimer.current);
-        saveTimer.current = null;
-      }
-      void flushWithKeepalive();
+      if (!autosaveRef.current?.isDirty()) return;
+      autosaveRef.current.finalize();
     }
     window.addEventListener("pagehide", onPageHide);
     return () => window.removeEventListener("pagehide", onPageHide);
-  }, [flushWithKeepalive]);
+  }, []);
 
   async function markAllPresent() {
     setRows((prev) => {
@@ -272,14 +265,14 @@ export function AttendanceSheetClient({
       };
     });
     return {
-      company_name: "DutyReg",
+      company_name: companyName,
       site_name: siteName,
       sheet_date: date,
       rows: entryRows,
       updated_at: null,
       updated_by_name: null,
     };
-  }, [rows, workers, siteName, date]);
+  }, [rows, workers, siteName, companyName, date]);
 
   const reportText = useMemo(() => buildReportText(report), [report]);
   const hasAnything = workers.length > 0;
