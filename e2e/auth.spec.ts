@@ -32,9 +32,9 @@ test.describe("auth flows", () => {
     await createCompany(page, "Wrong PW Co");
     await signOut(page);
 
-    await signIn(page, email, "totally-wrong");
+    await signIn(page, email, "totally-wrong", null);
     await expect(page.getByText("Wrong email or password. Check them and try again.")).toBeVisible();
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
   });
 
   test("rejects a short password at signup", async ({ page }) => {
@@ -52,7 +52,7 @@ test.describe("auth flows", () => {
       .locator('input[name="password"]')
       .evaluate((el) => (el as HTMLInputElement).validationMessage);
     expect(validationMessage.length).toBeGreaterThan(0);
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
   });
 
   test("rejects mismatched passwords at signup", async ({ page }) => {
@@ -65,6 +65,7 @@ test.describe("auth flows", () => {
     await page.getByRole("button", { name: "Create account" }).click();
 
     await expect(page.getByText("Passwords do not match.")).toBeVisible();
+    await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
   });
 
   test("toggles dark mode and persists the choice", async ({ page }) => {

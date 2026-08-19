@@ -28,7 +28,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
 
-  test:
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +38,60 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test
+
+  # Renamed from 'test' to 'e2e' for clarity
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      PORT: 3100
+      HOSTNAME: 127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: supabase start
+
+      # Point the app at the isolated local stack so E2E never touches the
+      # cloud project. $GITHUB_ENV overrides the job-level env for later steps.
+      - name: Extract local Supabase keys
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=$(supabase status --output json | jq -r .API_URL)" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(supabase status --output json | jq -r .PUBLISHABLE_KEY)" >> "$GITHUB_ENV"
+          echo "E2E_SUPABASE_URL=$(supabase status --output json | jq -r .API_URL)" >> "$GITHUB_ENV"
+          echo "E2E_SUPABASE_KEY=$(supabase status --output json | jq -r .PUBLISHABLE_KEY)" >> "$GITHUB_ENV"
+
+      - name: Run DB/RLS tests
+        run: npm run test:db
+
+      - run: npx --no-install playwright install chromium
+
+      - name: Start dev server
+        run: |
+          npm run dev -- --port $PORT > /tmp/nextjs.log 2>&1 &
+          echo $! > /tmp/nextjs.pid
+        shell: bash
+
+      - name: Wait for dev server
+        run: npx --yes wait-on http://127.0.0.1:$PORT --timeout 120000
+        shell: bash
+
+      - name: Run e2e tests
+        run: npm run test:e2e
+
+      # Only dumps logs if tests fail, keeping successful runs clean
+      - name: Dump server logs on failure
+        if: failure()
+        run: cat /tmp/nextjs.log
 
   build:
     runs-on: ubuntu-latest
