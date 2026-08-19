@@ -32,16 +32,54 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PORT: 3100
+      HOSTNAME: 127.0.0.1
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
       - run: npm ci
+
       - run: npx --no-install playwright install --with-deps chromium
-      - run: npm run test
+
+      # Sanity check: confirm the env vars made it into the job
+      - name: Verify env vars
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL set: $([ -n \"$NEXT_PUBLIC_SUPABASE_URL\" ] && echo YES || echo NO)"
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY set: $([ -n \"$NEXT_PUBLIC_SUPABASE_ANON_KEY\" ] && echo YES || echo NO)"
+          echo "SUPABASE_URL set: $([ -n \"$SUPABASE_URL\" ] && echo YES || echo NO)"
+          echo "SUPABASE_SERVICE_ROLE_KEY set: $([ -n \"$SUPABASE_SERVICE_ROLE_KEY\" ] && echo YES || echo NO)"
+
+      # Start Next.js in the background, capturing its logs
+      - name: Start dev server
+        run: |
+          npm run dev -- --port $PORT > /tmp/nextjs.log 2>&1 &
+          echo $! > /tmp/nextjs.pid
+        shell: bash
+
+      # Wait until the server is actually answering HTTP
+      - name: Wait for dev server
+        run: npx --yes wait-on http://127.0.0.1:$PORT --timeout 120000
+        shell: bash
+
+      # Run the tests
+      - name: Run e2e tests
+        run: npm run test:e2e
+
+      # ALWAYS print server logs so we can see the real error, even on success
+      - name: Dump dev server logs
+        if: always()
+        run: |
+          echo "===== Next.js dev server logs ====="
+          cat /tmp/nextjs.log
+          kill $(cat /tmp/nextjs.pid) 2>/dev/null || true
   
   e2e:
     runs-on: ubuntu-latest
