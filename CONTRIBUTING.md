@@ -1,27 +1,41 @@
 # Contributing to DutyReg
 
-# Contributing to DayMark
-
 Thanks for contributing. This project is GPL-3.0 licensed — by contributing you agree to the license terms in `LICENSE`.
 
 ## Branch strategy
 
 | Branch | Purpose |
 | ------ | ------- |
-| `main` | **Stable.** Only finalized, verified updates land here. Code on `main` is deploy-ready. |
-| `dev`  | **Development.** All development work is integrated here first. |
+| `main`   | **Production.** Only finalized, verified updates land here. Code on `main` is deploy-ready. |
+| `stable` | **QA / staging.** Release candidates that have passed the full CI suite and manual QA. |
+| `dev`    | **Development.** All development work is integrated here first. |
 
 Rules:
 
-1. **Never commit to `main` directly.** Development happens on `dev` (or short-lived feature branches off `dev`).
-2. Feature branches: `dev/feature-name` or `fix/description` — branched from `dev`, merged back into `dev` once done.
-3. **Merging to stable:** `dev` is merged to `main` only when the work is finalized — all checks pass, the manual QA pass is done, and the change set is intentional (no half-finished work).
+1. **Never commit to `main`, `stable`, or `dev` directly.** All changes land via pull requests — direct pushes and force-pushes to these branches are blocked by repository rules.
+2. Feature branches: `dev/feature-name` or `fix/description` — branched from `dev`, merged back into `dev` via PR once done.
+3. **Release ladder (see below):** every release moves `dev` → `stable` → `main` in order, so no branch ever receives code that skipped an earlier build.
 4. Hotfixes to a released bug may be committed on `main` only in an emergency, and must immediately be merged back into `dev`.
+
+## Release ladder
+
+Every release promotes the same content through the branches in order, so each branch's build has exercised the code that lands on the next one:
+
+1. **Work lands on `dev`** — feature PRs (`feature-branch` → `dev`), full CI required.
+2. **Promote to `stable`** (QA build) — open PR `dev` → `stable`, merge once CI is green.
+3. **Promote to `main`** (production) — open PR `stable` → `main`, merge once CI is green. Vercel deploys from `main`.
+
+Notes:
+
+- Merge with **"Create a merge commit"** — squash/force-push is not available on these branches anyway, and merge commits keep the history traceable.
+- Required status check: **"Quality, Security, and Build"** (lint, typecheck, unit tests, E2E, build) must pass on every PR before merging.
+- If a branch is missing a fix (e.g. an earlier promotion was skipped), open the PR from the most recent branch that has it — e.g. `dev` → `stable` and `dev` → `main` — then resume the normal `stable` → `main` flow for the next release.
+- Keep local refs in sync after merging: `git fetch origin && git branch -f main origin/main && git branch -f stable origin/stable && git branch -f dev origin/dev`.
 
 ## Getting started
 
 ```bash
-https://github.com/ravijaanthony/Attendance.git
+https://github.com/DutyReg/DutyReg.git
 cd Attendance
 git checkout dev
 npm install
