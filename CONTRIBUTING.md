@@ -15,7 +15,7 @@ Rules:
 1. **Never commit to `main`, `stable`, or `dev` directly.** All changes land via pull requests — direct pushes and force-pushes to these branches are blocked by repository rules.
 2. Feature branches: `dev/feature-name` or `fix/description` — branched from `dev`, merged back into `dev` via PR once done.
 3. **Release ladder (see below):** every release moves `dev` → `stable` → `main` in order, so no branch ever receives code that skipped an earlier build.
-4. Hotfixes to a released bug may be committed on `main` only in an emergency, and must immediately be merged back into `dev`.
+4. Hotfixes to a released bug go straight to `main` **via an emergency PR** (still subject to the required checks) and must immediately be merged back into `dev`.
 
 ## Release ladder
 
