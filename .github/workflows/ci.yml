@@ -1,4 +1,4 @@
-name: Quality, Security and Build
+name: Quality, Security, and Build
 
 on:
   pull_request:
