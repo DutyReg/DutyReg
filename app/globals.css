@@ -143,13 +143,37 @@ input[type="time"] {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-/* Respect users who prefer reduced motion */
+/* Progress bar (YouTube-style) */
+:root {
+  --nprogress-color: var(--primary);
+}
+.dark {
+  --nprogress-color: var(--primary);
+}
+
+#nprogress {
+  position: fixed;
+  top: 4rem; /* below header (h-16 = 4rem) */
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--nprogress-color);
+  transform-origin: left center;
+  transform: scaleX(0);
+  will-change: transform;
+  z-index: 9999;
+  pointer-events: none;
+  transition: transform 0.15s ease-out, opacity 0.3s ease-out;
+}
+
+#nprogress.done {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+  #nprogress {
     transition-duration: 0.01ms !important;
   }
 }

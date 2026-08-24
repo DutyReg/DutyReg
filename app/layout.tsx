@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import { DARK_THEME_COLOR, LIGHT_THEME_COLOR, THEME_STORAGE_KEY } from "@/lib/theme";
+import { ProgressProvider } from "@/components/progress-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,8 @@ export const viewport: Viewport = {
 
 const themeInitScript = `(function(){try{var k=${JSON.stringify(THEME_STORAGE_KEY)};var stored=localStorage.getItem(k);var dark=stored?stored==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;var el=document.documentElement;el.classList.toggle("dark",dark);el.style.colorScheme=dark?"dark":"light";}catch(e){}})();`;
 
+const progressInitScript = `(function(){try{var bar=document.getElementById('nprogress');if(!bar)return;var start=performance.now();function tick(){var p=Math.min(100,Math.round((performance.now()-start)/30));bar.style.transform='scaleX('+(p/100)+')';if(p<100)requestAnimationFrame(tick);}requestAnimationFrame(tick);}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -48,8 +51,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-dvh">
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        {children}
+        <div id="nprogress" />
+        <script
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
+        <script
+          dangerouslySetInnerHTML={{ __html: progressInitScript }}
+        />
+        <ProgressProvider>
+          {children}
+        </ProgressProvider>
       </body>
     </html>
   );
