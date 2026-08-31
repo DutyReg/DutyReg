@@ -12,6 +12,12 @@ import {
   workerCard,
 } from "./helpers";
 
+declare global {
+  interface Window {
+    __whatsappUrl: string | null;
+  }
+}
+
 test.describe("attendance marking", () => {
   test("marks all present, toggles to absent, applies the late rule and saves", async ({ page }) => {
     const email = uniqueEmail("att");
@@ -76,16 +82,16 @@ test.describe("attendance marking", () => {
 
     // Stub window.open to capture the URL without external network calls
     await page.evaluate(() => {
-      (window as any).__whatsappUrl = null;
+      window.__whatsappUrl = null;
       window.open = (url?: string | URL) => {
-        (window as any).__whatsappUrl = url?.toString() ?? "";
+        window.__whatsappUrl = url?.toString() ?? "";
         return null;
       };
     });
 
     await page.getByRole("button", { name: "Share on WhatsApp" }).click();
 
-    const url = await page.evaluate(() => (window as any).__whatsappUrl as string);
+    const url = await page.evaluate(() => window.__whatsappUrl as string);
     expect(url).toBeTruthy();
     expect(url).toMatch(/^https:\/\/(wa\.me\/\?text=|api\.whatsapp\.com\/send\/\?text=)/);
     const textPart = url.split("text=")[1] ?? "";
