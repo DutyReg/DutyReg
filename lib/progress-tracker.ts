@@ -21,9 +21,9 @@ const milestonesDone = new Set<MilestoneName>();
 
 function updateBar(progress: number) {
   currentProgress = Math.min(100, Math.max(0, Math.round(progress)));
-  const bar = document.getElementById('nprogress');
-  if (bar) {
-    bar.style.transform = `scaleX(${currentProgress / 100})`;
+  const circle = document.querySelector<SVGElement>('#nprogress circle');
+  if (circle) {
+    circle.style.strokeDashoffset = String(100 * (1 - currentProgress / 100));
   }
   if (progressCallback) {
     progressCallback(currentProgress);
@@ -55,16 +55,16 @@ function complete() {
   if (completed) return;
   completed = true;
   updateBar(100);
-  const bar = document.getElementById('nprogress');
-  if (bar) {
-    bar.classList.add('done');
+  const svg = document.getElementById('nprogress');
+  if (svg) {
+    svg.classList.add('done');
   }
   if (completeCallback) {
     completeCallback();
   }
   setTimeout(() => {
-    const bar = document.getElementById('nprogress');
-    if (bar) bar.style.transform = 'scaleX(0)';
+    const circle = document.querySelector<SVGElement>('#nprogress circle');
+    if (circle) circle.style.strokeDashoffset = '100';
   }, 500);
 }
 
@@ -132,5 +132,7 @@ export function resetProgress() {
   completed = false;
   milestonesDone.clear();
   updateBar(0);
+  const svg = document.getElementById('nprogress');
+  if (svg) svg.classList.remove('done');
   initProgressTracker();
 }

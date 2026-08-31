@@ -91,7 +91,12 @@ jobs:
       # Only dumps logs if tests fail, keeping successful runs clean
       - name: Dump server logs on failure
         if: failure()
-        run: cat /tmp/nextjs.log
+        run: |
+          if [ -f /tmp/nextjs.log ]; then
+            cat /tmp/nextjs.log
+          else
+            echo "No server log available (dev server did not start)"
+          fi
 
   build:
     runs-on: ubuntu-latest
