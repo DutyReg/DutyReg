@@ -74,19 +74,26 @@ test.describe("attendance marking", () => {
 
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
 
-    const [popup] = await Promise.all([
-      page.waitForEvent("popup"),
-      page.getByRole("button", { name: "Share on WhatsApp" }).click(),
-    ]);
-    const url = popup.url();
-    // wa.me redirects to api.whatsapp.com/send/?text=...
+    // Stub window.open to capture the URL without external network calls
+    await page.evaluate(() => {
+      (window as any).__whatsappUrl = null;
+      window.open = (url?: string | URL) => {
+        (window as any).__whatsappUrl = url?.toString() ?? "";
+        return null;
+      };
+    });
+
+    await page.getByRole("button", { name: "Share on WhatsApp" }).click();
+
+    const url = await page.evaluate(() => (window as any).__whatsappUrl as string);
+    expect(url).toBeTruthy();
     expect(url).toMatch(/^https:\/\/(wa\.me\/\?text=|api\.whatsapp\.com\/send\/\?text=)/);
-    const text = decodeURIComponent(url.split("text=")[1].split("&")[0].replace(/\+/g, "%20"));
+    const textPart = url.split("text=")[1] ?? "";
+    const text = decodeURIComponent(textPart.split("&")[0].replace(/\+/g, "%20"));
     expect(text).toContain("DutyReg Attendance Report");
     expect(text).toContain("Company: Share Co");
     expect(text).toContain("Site: Galle Town House");
     expect(text).toContain("Ruwan Fernando");
     expect(text).toContain("Present: 1 | Absent: 0 | Late: 0");
-    await popup.close();
   });
 });
