@@ -116,8 +116,14 @@ export default async function DashboardPage({
   const isToday = date === today;
 
   return (
-    <div className="grid gap-5">
-      <RealtimeRefresher tables={[{ table: "attendance_sheets", companyId: ctx.company.id }, { table: "attendance_entries" }]} />
+    <>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: "window.__markDataLoaded?.('dashboard')"
+        }}
+      />
+      <div className="grid gap-5">
+        <RealtimeRefresher tables={[{ table: "attendance_sheets", companyId: ctx.company.id }, { table: "attendance_entries" }]} />
       <PageHeader
         title={isToday ? "Today at a glance" : formatSheetDate(date)}
         description={site ? `Site: ${site.name}` : "No active sites yet"}
@@ -224,7 +230,8 @@ export default async function DashboardPage({
           </Card>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

@@ -6,6 +6,7 @@ export function LogoMark({
 }: SVGProps<SVGSVGElement> & { size?: number }) {
   return (
     <svg
+      id="brand-logo"
       width={size}
       height={size}
       viewBox="0 0 512 512"
