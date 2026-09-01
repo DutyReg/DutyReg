@@ -4,6 +4,7 @@ import {
   addMember,
   changeMemberRole,
   createCompany,
+  goto,
   PASSWORD,
   removeMember,
   signUp,
@@ -16,7 +17,7 @@ test.describe("team members", () => {
     await signUp(page, email);
     await createCompany(page, "Self Co");
 
-    await page.goto("/settings/members");
+    await goto(page, "/settings/members");
     await expect(page.getByText("(you)")).toBeVisible();
     await expect(page.getByRole("button", { name: "Remove from company" })).toHaveCount(0);
   });
@@ -26,7 +27,7 @@ test.describe("team members", () => {
     await signUp(page, email);
     await createCompany(page, "InvalidAdd Co");
 
-    await page.goto("/settings/members");
+    await goto(page, "/settings/members");
     const addForm = page.locator('form:has(input[name="email"])');
     const emailInput = addForm.locator('input[name="email"]');
     await emailInput.fill("not-an-email");

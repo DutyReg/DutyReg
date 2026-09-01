@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   createCompany,
+  goto,
   PASSWORD,
   signIn,
   signOut,
@@ -38,7 +39,7 @@ test.describe("auth flows", () => {
   });
 
   test("rejects a short password at signup", async ({ page }) => {
-    await page.goto("/login");
+    await goto(page, "/login");
     await page.getByRole("button", { name: "Create an account" }).click();
     await page.locator('input[name="fullName"]').fill("E2E Tester");
     await page.locator('input[name="email"]').fill(uniqueEmail("shortpw"));
@@ -56,7 +57,7 @@ test.describe("auth flows", () => {
   });
 
   test("rejects mismatched passwords at signup", async ({ page }) => {
-    await page.goto("/login");
+    await goto(page, "/login");
     await page.getByRole("button", { name: "Create an account" }).click();
     await page.locator('input[name="fullName"]').fill("E2E Tester");
     await page.locator('input[name="email"]').fill(uniqueEmail("mismatch"));

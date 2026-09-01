@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { addSite, createCompany, signUp, uniqueEmail } from "./helpers";
+import { addSite, createCompany, goto, signUp, uniqueEmail } from "./helpers";
 
 test.describe("UI interactions", () => {
   test("the confirm dialog closes on Escape without deleting", async ({ page }) => {
@@ -9,7 +9,7 @@ test.describe("UI interactions", () => {
     await createCompany(page, "DialogEsc Co");
 
     await addSite(page, "Keep Me");
-    await page.goto("/settings/sites");
+    await goto(page, "/settings/sites");
     await page.getByRole("button", { name: "Delete site" }).click();
 
     const dialog = page.getByRole("dialog");
@@ -27,7 +27,7 @@ test.describe("UI interactions", () => {
     await createCompany(page, "DialogBackdrop Co");
 
     await addSite(page, "Keep Me Too");
-    await page.goto("/settings/sites");
+    await goto(page, "/settings/sites");
     await page.getByRole("button", { name: "Delete site" }).click();
 
     const dialog = page.getByRole("dialog");
@@ -44,7 +44,7 @@ test.describe("UI interactions", () => {
     await createCompany(page, "DialogCancel Co");
 
     await addSite(page, "Cancelled Site");
-    await page.goto("/settings/sites");
+    await goto(page, "/settings/sites");
     await page.getByRole("button", { name: "Delete site" }).click();
 
     const dialog = page.getByRole("dialog");
@@ -83,12 +83,12 @@ test.describe("UI interactions", () => {
   });
 
   test("the login page shows an OAuth error banner", async ({ page }) => {
-    await page.goto("/login?error=auth");
+    await goto(page, "/login?error=auth");
     await expect(page.getByText("Google sign-in did not complete. Try again.")).toBeVisible();
   });
 
   test("the login page shows the Google sign-in option", async ({ page }) => {
-    await page.goto("/login");
+    await goto(page, "/login");
     await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   });
 });

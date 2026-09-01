@@ -7,6 +7,7 @@ import {
   deleteSite,
   deleteWorker,
   editWorker,
+  goto,
   renameSite,
   signUp,
   uniqueEmail,
@@ -31,7 +32,7 @@ test.describe("settings", () => {
     await signUp(page, email);
     await createCompany(page, "Val Co");
 
-    await page.goto("/settings");
+    await goto(page, "/settings");
     const nameForm = page.locator('form:has(input[name="name"])');
     const nameInput = nameForm.locator('input[name="name"]');
     await nameInput.fill("");
@@ -46,7 +47,7 @@ test.describe("settings", () => {
     await signUp(page, email);
     await createCompany(page, "Hours Co");
 
-    await page.goto("/settings");
+    await goto(page, "/settings");
     const hoursForm = page.locator('form:has(input[name="start_time"])');
     await hoursForm.locator('input[name="start_time"]').fill("07:30");
     await hoursForm.locator('input[name="end_time"]').fill("16:30");
@@ -63,7 +64,7 @@ test.describe("settings", () => {
     await signUp(page, email);
     await createCompany(page, "HReq Co");
 
-    await page.goto("/settings");
+    await goto(page, "/settings");
     const hoursForm = page.locator('form:has(input[name="start_time"])');
     const startInput = hoursForm.locator('input[name="start_time"]');
     await startInput.fill("");
@@ -107,7 +108,7 @@ test.describe("settings", () => {
     await signUp(page, email);
     await createCompany(page, "EmptySite Co");
 
-    await page.goto("/settings/sites");
+    await goto(page, "/settings/sites");
     await expect(page.getByText("No sites yet", { exact: true })).toBeVisible();
   });
 
@@ -163,7 +164,7 @@ test.describe("settings", () => {
     ] as const;
 
     for (const { label, path } of sections) {
-      await page.goto(path);
+      await goto(page, path);
       const link = nav.getByRole("link", { name: label });
       await expect(link).toHaveAttribute("aria-current", "page");
       if (label !== "Company") {

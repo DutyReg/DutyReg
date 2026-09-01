@@ -2,6 +2,16 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 export const PASSWORD = "password123";
 
+/**
+ * Shared navigation helper. Uses the default `waitUntil: "load"` so the page's
+ * client-side JS bundle is loaded (and React hydrated) before the test starts
+ * interacting with it — clicking a button on a server-rendered page before
+ * hydration completes is a silent no-op.
+ */
+export function goto(page: Page, url: string) {
+  return page.goto(url);
+}
+
 /** Unique email per test so parallel runs never collide. */
 export function uniqueEmail(label: string): string {
   const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -9,7 +19,7 @@ export function uniqueEmail(label: string): string {
 }
 
 export async function signUp(page: Page, email: string, password = PASSWORD) {
-  await page.goto("/login");
+  await goto(page, "/login");
   await page.getByRole("button", { name: "Create an account" }).click();
   await page.locator('input[name="fullName"]').fill("E2E Tester");
   await page.locator('input[name="email"]').fill(email);
@@ -25,7 +35,7 @@ export async function signIn(
   password = PASSWORD,
   destination: RegExp | null = /\/dashboard/,
 ) {
-  await page.goto("/login");
+  await goto(page, "/login");
   await page.locator('input[name="email"]').fill(email);
   await page.locator('input[name="password"]').fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
@@ -48,7 +58,7 @@ export async function signOut(page: Page) {
 }
 
 export async function setWorkHours(page: Page, start: string, end: string) {
-  await page.goto("/settings");
+  await goto(page, "/settings");
   const hoursForm = page.locator('form:has(input[name="start_time"])');
   await hoursForm.locator('input[name="start_time"]').fill(start);
   await hoursForm.locator('input[name="end_time"]').fill(end);
@@ -57,14 +67,14 @@ export async function setWorkHours(page: Page, start: string, end: string) {
 }
 
 export async function addSite(page: Page, name: string) {
-  await page.goto("/settings/sites");
+  await goto(page, "/settings/sites");
   await page.locator('form input[name="name"]').first().fill(name);
   await page.getByRole("button", { name: "Save" }).first().click();
   await expect(page.getByText(name, { exact: true })).toBeVisible({ timeout: 15_000 });
 }
 
 export async function addWorker(page: Page, name: string, code: string) {
-  await page.goto("/settings/workers");
+  await goto(page, "/settings/workers");
   await page.locator('form input[name="name"]').first().fill(name);
   await page.locator('form input[name="workerCode"]').first().fill(code);
   await page.getByRole("button", { name: "Save" }).first().click();
@@ -73,7 +83,7 @@ export async function addWorker(page: Page, name: string, code: string) {
 
 /** Wait until the autosave chip settles on "Saved" (debounce + upsert). */
 export async function expectSaved(page: Page) {
-  await expect(page.getByText("Saved", { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId("save-chip")).toBeVisible({ timeout: 15_000 });
 }
 
 export function workerCard(page: Page, workerName: string) {
@@ -91,7 +101,7 @@ export async function markStatus(page: Page, workerName: string, status: "Presen
 
 /** Update the company name on /settings and wait for the success banner. */
 export async function updateCompanyName(page: Page, name: string) {
-  await page.goto("/settings");
+  await goto(page, "/settings");
   const nameForm = page.locator('form:has(input[name="name"])');
   await nameForm.locator('input[name="name"]').fill(name);
   await nameForm.getByRole("button", { name: "Save" }).click();
@@ -110,7 +120,7 @@ function cardByText(page: Page, label: string): Locator {
 }
 
 export async function renameSite(page: Page, oldName: string, newName: string) {
-  await page.goto("/settings/sites");
+  await goto(page, "/settings/sites");
   const card = cardByText(page, oldName);
   const nameInput = card.locator('form input[name="name"]');
   await nameInput.fill(newName);
@@ -119,7 +129,7 @@ export async function renameSite(page: Page, oldName: string, newName: string) {
 }
 
 export async function deleteSite(page: Page, siteName: string) {
-  await page.goto("/settings/sites");
+  await goto(page, "/settings/sites");
   const card = cardByText(page, siteName);
   await card.getByRole("button", { name: "Delete site" }).click();
   const dialog = page.getByRole("dialog");
@@ -138,7 +148,7 @@ function workerEditForm(page: Page, workerName: string): Locator {
 
 /** Add a worker, optionally assigning them to an active site. */
 export async function addWorkerWithSite(page: Page, name: string, code: string, siteName?: string) {
-  await page.goto("/settings/workers");
+  await goto(page, "/settings/workers");
   const addForm = page.locator('form:has(input[name="workerCode"])').first();
   await addForm.locator('input[name="name"]').fill(name);
   await addForm.locator('input[name="workerCode"]').fill(code);
@@ -150,7 +160,7 @@ export async function addWorkerWithSite(page: Page, name: string, code: string, 
 }
 
 export async function editWorker(page: Page, oldName: string, newName: string) {
-  await page.goto("/settings/workers");
+  await goto(page, "/settings/workers");
   const editForm = workerEditForm(page, oldName);
   await editForm.locator('input[name="name"]').fill(newName);
   await editForm.getByRole("button", { name: "Save changes" }).click();
@@ -158,7 +168,7 @@ export async function editWorker(page: Page, oldName: string, newName: string) {
 }
 
 export async function deleteWorker(page: Page, workerName: string) {
-  await page.goto("/settings/workers");
+  await goto(page, "/settings/workers");
   const card = cardByText(page, workerName);
   await card.getByRole("button", { name: "Delete worker" }).click();
   const dialog = page.getByRole("dialog");
@@ -181,7 +191,7 @@ function memberRoleForm(page: Page, email: string): Locator {
 }
 
 export async function addMember(page: Page, email: string, role: string) {
-  await page.goto("/settings/members");
+  await goto(page, "/settings/members");
   const addForm = page.locator('form:has(input[name="email"])');
   await addForm.locator('input[name="email"]').fill(email);
   await addForm.locator('select[name="role"]').selectOption(role);
@@ -190,7 +200,7 @@ export async function addMember(page: Page, email: string, role: string) {
 }
 
 export async function changeMemberRole(page: Page, email: string, role: string) {
-  await page.goto("/settings/members");
+  await goto(page, "/settings/members");
   const form = memberRoleForm(page, email);
   // The new role is reflected in the member's role form select after revalidation.
   await form.locator('select[name="role"]').selectOption(role);
@@ -201,7 +211,7 @@ export async function changeMemberRole(page: Page, email: string, role: string) 
 }
 
 export async function removeMember(page: Page, email: string) {
-  await page.goto("/settings/members");
+  await goto(page, "/settings/members");
   const card = memberCard(page, email);
   await card.getByRole("button", { name: "Remove from company" }).click();
   const dialog = page.getByRole("dialog");

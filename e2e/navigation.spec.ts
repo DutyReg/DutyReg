@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { createCompany, signUp, uniqueEmail } from "./helpers";
+import { createCompany, goto, signUp, uniqueEmail } from "./helpers";
 
 test.describe("navigation", () => {
   test("highlights the Today link on the dashboard", async ({ page }) => {
@@ -8,7 +8,7 @@ test.describe("navigation", () => {
     await signUp(page, email);
     await createCompany(page, "NavToday Co");
 
-    await page.goto("/dashboard");
+    await goto(page, "/dashboard");
     const nav = page.getByRole("navigation", { name: "Main" });
     await expect(nav.getByRole("link", { name: "Today" })).toHaveAttribute("aria-current", "page");
     await expect(nav.getByRole("link", { name: "Mark" })).not.toHaveAttribute("aria-current", "page");
@@ -19,7 +19,7 @@ test.describe("navigation", () => {
     await signUp(page, email);
     await createCompany(page, "NavMark Co");
 
-    await page.goto("/attendance");
+    await goto(page, "/attendance");
     const nav = page.getByRole("navigation", { name: "Main" });
     await expect(nav.getByRole("link", { name: "Mark" })).toHaveAttribute("aria-current", "page");
     await expect(nav.getByRole("link", { name: "Today" })).not.toHaveAttribute("aria-current", "page");
@@ -30,7 +30,7 @@ test.describe("navigation", () => {
     await signUp(page, email);
     await createCompany(page, "NavSettings Co");
 
-    await page.goto("/settings");
+    await goto(page, "/settings");
     const nav = page.getByRole("navigation", { name: "Main" });
     await expect(nav.getByRole("link", { name: "Settings" })).toHaveAttribute("aria-current", "page");
     await expect(nav.getByRole("link", { name: "Today" })).not.toHaveAttribute("aria-current", "page");
