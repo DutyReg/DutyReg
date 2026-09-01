@@ -1,5 +1,6 @@
 import type {
   ButtonHTMLAttributes,
+  HTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
   SelectHTMLAttributes,
@@ -122,10 +123,11 @@ export function Select({
 
 export function Chip({
   tone = "neutral",
+  className = "",
   children,
-}: {
+  ...props
+}: HTMLAttributes<HTMLSpanElement> & {
   tone?: "neutral" | "positive" | "negative" | "warning";
-  children: ReactNode;
 }) {
   const tones = {
     neutral: "bg-zinc-100 text-ink dark:bg-zinc-800 dark:text-zinc-100",
@@ -134,7 +136,7 @@ export function Chip({
     warning: "bg-warning-soft text-warning-ink",
   };
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]} ${className}`} {...props}>
       {children}
     </span>
   );

@@ -287,7 +287,7 @@ export function AttendanceSheetClient({
   }
 
   const saveChip = {
-    saved: <Chip tone="positive">Saved</Chip>,
+    saved: <Chip data-testid="save-chip" tone="positive">Saved</Chip>,
     saving: <Chip tone="neutral"><SavingGlyph /> Saving</Chip>,
     unsaved: <Chip tone="warning">Not saved</Chip>,
   }[saveState];
