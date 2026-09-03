@@ -7,7 +7,7 @@ import type {
   Worker,
 } from "@/lib/types";
 
-export type SheetBundle = {
+type SheetBundle = {
   sheet: AttendanceSheet;
   workers: Worker[];
   entries: AttendanceEntry[];

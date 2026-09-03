@@ -82,6 +82,34 @@ test.describe("UI interactions", () => {
     await expect(page.getByRole("menuitem", { name: "Sign out" })).toHaveCount(0);
   });
 
+  test("the user menu offers 'Use system setting' after a manual theme override and resets on click", async ({
+    page,
+  }) => {
+    const email = uniqueEmail("menureset");
+    await signUp(page, email);
+    await createCompany(page, "MenuReset Co");
+
+    // The "Use system setting" item only appears once a manual override exists.
+    const menuButton = page.getByRole("button", { name: "Account menu" });
+    await menuButton.click();
+    await expect(page.getByRole("menuitem", { name: "Use system setting" })).toHaveCount(0);
+    await page.keyboard.press("Escape");
+
+    // Toggle the theme → writes the storage key → override becomes active.
+    await page.getByRole("button", { name: "Switch to dark mode" }).click();
+    await menuButton.click();
+    await expect(page.getByRole("menuitem", { name: "Use system setting" })).toBeVisible();
+
+    // Clicking it removes the override and closes the menu.
+    await page.getByRole("menuitem", { name: "Use system setting" }).click();
+    await expect(page.getByRole("menuitem", { name: "Use system setting" })).toHaveCount(0);
+
+    // Re-opening the menu no longer offers the reset item.
+    await menuButton.click();
+    await expect(page.getByRole("menuitem", { name: "Use system setting" })).toHaveCount(0);
+    await expect(page.getByRole("menuitem", { name: "Sign out" })).toBeVisible();
+  });
+
   test("the login page shows an OAuth error banner", async ({ page }) => {
     await goto(page, "/login?error=auth");
     await expect(page.getByText("Google sign-in did not complete. Try again.")).toBeVisible();

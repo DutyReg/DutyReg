@@ -8,8 +8,6 @@ export const ROLE_LABELS: Record<Role, string> = {
   viewer: "Viewer",
 };
 
-export const ATTENDANCE_STATUSES = ["present", "absent", "late", "unknown"] as const;
-
 export const STATUS_LABELS: Record<AttendanceStatus, string> = {
   present: "Present",
   absent: "Absent",

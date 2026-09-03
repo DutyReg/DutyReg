@@ -6,14 +6,14 @@ import { usePathname } from "next/navigation";
 import { CheckIcon, GearIcon, ListIcon } from "@/components/icons";
 import type { Role } from "@/lib/types";
 
-export interface NavItem {
+interface NavItem {
   href: string;
   label: string;
   icon: "list" | "check" | "gear";
   ownerOnly?: boolean;
 }
 
-export const NAV_ITEMS: NavItem[] = [
+const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Today", icon: "list" },
   { href: "/attendance", label: "Mark", icon: "check", ownerOnly: false },
   { href: "/settings", label: "Settings", icon: "gear", ownerOnly: true },

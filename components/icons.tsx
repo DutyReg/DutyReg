@@ -29,60 +29,6 @@ export function CheckIcon(props: IconProps) {
   );
 }
 
-export function XIcon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
-  );
-}
-
-export function DotIcon(props: IconProps) {
-  return (
-    <svg {...base({ ...props })}>
-      <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-export function UserIcon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M4.5 20c.8-3.5 3.9-5.5 7.5-5.5s6.7 2 7.5 5.5" />
-    </svg>
-  );
-}
-
-export function BuildingsIcon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M4 21V5.5A1.5 1.5 0 0 1 5.5 4h7A1.5 1.5 0 0 1 14 5.5V21" />
-      <path d="M14 9h4.5A1.5 1.5 0 0 1 20 10.5V21" />
-      <path d="M2.5 21h19" />
-      <path d="M8 8h2M8 12h2M8 16h2M16.5 13h1.5M16.5 17h1.5" />
-    </svg>
-  );
-}
-
-export function MapPinIcon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M12 21s-7-5.4-7-11a7 7 0 1 1 14 0c0 5.6-7 11-7 11z" />
-      <circle cx="12" cy="10" r="2.6" />
-    </svg>
-  );
-}
-
-export function ClockIcon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 7.5V12l3 2" />
-    </svg>
-  );
-}
-
 export function ShareIcon(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -126,14 +72,6 @@ export function ChevronDownIcon(props: IconProps) {
   );
 }
 
-export function PlusIcon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-
 export function LogOutIcon(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -148,35 +86,6 @@ export function GearIcon(props: IconProps) {
     <svg {...base(props)}>
       <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
       <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-export function CalendarIcon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
-      <path d="M3.5 10h17M8 2.75V6.75M16 2.75V6.75" />
-    </svg>
-  );
-}
-
-export function AlertIcon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M12 3.5 21 20H3z" />
-      <path d="M12 10v4.5" />
-      <circle cx="12" cy="17.5" r="0.75" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-export function LinkIcon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M9.5 14.5l5-5" />
-      <path d="M7.5 12.5l-1.8 1.8a4 4 0 1 0 5.6 5.6l1.8-1.8" />
-      <path d="M16.5 11.5l1.8-1.8a4 4 0 1 0-5.6-5.6l-1.8 1.8" />
     </svg>
   );
 }

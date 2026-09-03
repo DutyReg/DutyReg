@@ -40,16 +40,6 @@ export function formatSheetDate(isoDate: string): string {
   return DISPLAY_FORMAT.format(parseSheetDate(isoDate));
 }
 
-/** "13 Aug" — short form for compact UI. */
-export function formatSheetDateShort(isoDate: string): string {
-  const d = parseSheetDate(isoDate);
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "UTC",
-    day: "numeric",
-    month: "short",
-  }).format(d);
-}
-
 /** "14:05" in Colombo time from a full timestamp string. */
 export function formatTime(iso: string): string {
   return TIME_FORMAT.format(new Date(iso));

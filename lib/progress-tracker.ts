@@ -15,8 +15,6 @@ interface MilestoneConfig {
 
 let currentProgress = 0;
 let completed = false;
-let progressCallback: ((p: number) => void) | null = null;
-let completeCallback: (() => void) | null = null;
 const milestonesDone = new Set<MilestoneName>();
 
 function updateBar(progress: number) {
@@ -24,9 +22,6 @@ function updateBar(progress: number) {
   const circle = document.querySelector<SVGElement>('#nprogress circle');
   if (circle) {
     circle.style.strokeDashoffset = String(100 * (1 - currentProgress / 100));
-  }
-  if (progressCallback) {
-    progressCallback(currentProgress);
   }
 }
 
@@ -58,9 +53,6 @@ function complete() {
   const svg = document.getElementById('nprogress');
   if (svg) {
     svg.classList.add('done');
-  }
-  if (completeCallback) {
-    completeCallback();
   }
   setTimeout(() => {
     const circle = document.querySelector<SVGElement>('#nprogress circle');
@@ -111,20 +103,8 @@ export function initProgressTracker() {
   }
 }
 
-export function onProgress(cb: (p: number) => void) {
-  progressCallback = cb;
-}
-
-export function onComplete(cb: () => void) {
-  completeCallback = cb;
-}
-
 export function markDataLoaded() {
   markMilestone('supabaseData');
-}
-
-export function completeProgress() {
-  complete();
 }
 
 export function resetProgress() {
