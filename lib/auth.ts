@@ -16,8 +16,6 @@ const getSessionUser = cache(async (): Promise<User | null> => {
   return user;
 });
 
-export const getCurrentUser = getSessionUser;
-
 interface MembershipRow {
   id: string;
   company_id: string;

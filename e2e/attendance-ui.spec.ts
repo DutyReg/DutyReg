@@ -178,4 +178,42 @@ test.describe("attendance UI", () => {
     await expectSaved(page);
     await expect(card.getByRole("button", { name: "Late" })).toHaveAttribute("aria-pressed", "true");
   });
+
+  test("the 'Save now' button forces an immediate save", async ({ page }) => {
+    const email = uniqueEmail("savenow");
+    await signUp(page, email);
+    await createCompany(page, "SaveNow Co");
+
+    await addSite(page, "Main Site");
+    await addWorker(page, "Nimal Perera", "W009");
+    await page.getByRole("link", { name: "Mark" }).click();
+    await expect(page).toHaveURL(/\/attendance/, { timeout: 15_000 });
+
+    await page.getByRole("button", { name: "Mark all present" }).click();
+    await page.getByRole("button", { name: "Save now" }).click();
+    await expectSaved(page);
+  });
+
+  test("shows Retry after a failed save and recovers on click", async ({ page }) => {
+    const email = uniqueEmail("retry");
+    await signUp(page, email);
+    await createCompany(page, "Retry Co");
+
+    // Force the first upsert to fail so the autosave lands in the "unsaved" state.
+    await page.route("**/rest/v1/attendance_entries*", (route) => route.abort());
+
+    await addSite(page, "Main Site");
+    await addWorker(page, "Kumari Silva", "W010");
+    await page.getByRole("link", { name: "Mark" }).click();
+    await expect(page).toHaveURL(/\/attendance/, { timeout: 15_000 });
+
+    await page.getByRole("button", { name: "Mark all present" }).click();
+    await expect(page.getByRole("button", { name: "Retry" })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId("save-chip")).toContainText("Not saved");
+
+    // Allow the save to succeed now; clicking Retry persists the changes.
+    await page.unroute("**/rest/v1/attendance_entries*");
+    await page.getByRole("button", { name: "Retry" }).click();
+    await expectSaved(page);
+  });
 });

@@ -8,12 +8,6 @@ Duty registry for small businesses in Sri Lanka. Supervisor-first, mobile-first,
 
 DutyReg is the pilot implementation of the AttendancePilot MVP described in `pilot-project.md` / `pilot-project-plan.md` (kept at the workspace root — this app lives in `Attendance/`).
 
-# DayMark
-
-Attendance logging for small businesses in Sri Lanka. Supervisor-first, mobile-first, low data, cheap-Android friendly. The supervisor marks workers present/absent on a daily sheet; owners and viewers see results instantly and reports can be shared over WhatsApp.
-
-DayMark is the pilot implementation of the AttendancePilot MVP described in `pilot-project.md` / `pilot-project-plan.md` (kept at the workspace root — this app lives in `Attendance/`).
-
 ## Features
 
 - **Mark attendance** — one sheet per site per day; present / absent / not-marked, optional in/out time and note, "Mark all present". Debounced **auto-save** (Saved / Saving / Not saved status chip) that also flushes on navigation and page unload, so edits are never lost.
@@ -36,7 +30,7 @@ DayMark is the pilot implementation of the AttendancePilot MVP described in `pil
 - Next.js 16 (App Router, TypeScript, Turbopack) on Vercel — Docker support included
 - Supabase: PostgreSQL + Auth (Google OAuth and email/password) + Row Level Security + Realtime
 - No service-role key in the browser; every mutation is gated by RLS policies (and security-definer RPCs for member management)
-- GitHub Actions CI: lint → typecheck → tests → build (on PRs and pushes to `dev`/`main`)
+- GitHub Actions CI: lint → typecheck → unit tests → DB/RLS tests → Playwright E2E → build (on PRs and pushes to `dev`/`main`/`stable`)
 
 ## Branches
 
@@ -62,7 +56,6 @@ See `CONTRIBUTING.md` for the workflow.
    supabase db push --password "$YOUR_DB_PASSWORD"
    ```
 4. For demo data, create an auth user with email `demo@dutyreg.app` (Authentication → Users → Add user), then run `supabase/seed.sql` against the database.
-4. For demo data, create an auth user with email `demo@daymark.app` (Authentication → Users → Add user), then run `supabase/seed.sql` against the database.
 
 5. Enable **Google login**: Authentication → Providers → Google. Set up an OAuth client in Google Cloud Console with the redirect URL `https://<your-domain>/auth/callback` (use `http://localhost:3000/auth/callback` for local dev).
 6. Email/password is enabled by default (Authorization → Providers → Email). For the pilot, disable "Confirm email" if you want instant sign-in without a mail server.
@@ -90,16 +83,35 @@ npm run dev          # http://localhost:3000
 | `npm run lint`        | ESLint                              |
 | `npm run typecheck`   | TypeScript (`tsc --noEmit`)         |
 | `npm run test`        | Vitest unit tests                   |
+| `npm run test:db`     | Vitest DB/RLS tests (needs local Supabase) |
+| `npm run test:e2e`    | Playwright E2E tests (needs local Supabase) |
 | `npm run build`       | Production build (standalone)       |
 | `npm start`           | Serve the production build          |
 
+## Testing
+
+- **Unit tests** (`npm run test`) — Vitest, no external services.
+- **DB/RLS tests** (`npm run test:db`) — Vitest + DB, needs a **running local Supabase** (`supabase start`).
+- **E2E tests** (`npm run test:e2e`) — Playwright against a real browser and the Postgres-backed app.
+
+Playwright auto-starts the dev server on **port 3100** (`webServer` in `playwright.config.ts`) and `reuseExistingServer` lets tests attach to one you started yourself. Against a local Supabase stack it needs the publishable key exported, or it falls back to the defaults baked into the config:
+
+```bash
+supabase start                       # local stack on :54321
+export E2E_SUPABASE_URL="http://127.0.0.1:54321"
+export E2E_SUPABASE_KEY="<your publishable key>"
+npm run test:e2e                     # or: npx playwright test --workers=1
+```
+
+The suite sets `retries: 2`, so a slow dev-server first attempt won't fail a healthy test run.
+
 ## Docker
+
+The `Dockerfile` builds a **production standalone image** (it runs `npm run build`, no tests). The image is meant for deployment, not for running the test suite.
 
 ```bash
 docker build -t dutyreg .
 docker run --rm -p 3000:3000 --env-file .env.local dutyreg
-docker build -t daymark .
-docker run --rm -p 3000:3000 --env-file .env.local daymark
 # or
 docker compose up --build
 ```

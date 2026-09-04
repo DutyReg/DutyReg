@@ -3,7 +3,7 @@ export const THEME_STORAGE_KEY = "daymark-theme";
 export const LIGHT_THEME_COLOR = "#f8fbff";
 export const DARK_THEME_COLOR = "#0a0f12";
 
-export interface ThemeSnapshot {
+interface ThemeSnapshot {
   dark: boolean;
   override: boolean;
 }

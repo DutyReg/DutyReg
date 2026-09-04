@@ -47,25 +47,6 @@ export function Btn({
   );
 }
 
-export function IconBtn({
-  label,
-  className = "",
-  children,
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { label: string }) {
-  return (
-    <button
-      aria-label={label}
-      title={label}
-      className={`inline-flex size-11 items-center justify-center rounded-full text-ink transition-colors
-        hover:bg-zinc-100 active:bg-zinc-200 dark:hover:bg-zinc-800/70 dark:active:bg-zinc-700/70 ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-}
-
 export function Card({
   className = "",
   children,

@@ -1,0 +1,67 @@
+name: Enforce Branch Ladder
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, labeled, unlabeled]
+
+jobs:
+  ladder-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enforce new-branch → dev → stable → main
+        env:
+          PR_HEAD: ${{ github.event.pull_request.head.ref }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+
+          echo "PR: $PR_HEAD → $PR_BASE"
+
+          # Feature/fix/chore branches → dev is always allowed
+          if [ "$PR_BASE" = "dev" ]; then
+            echo "PASS: feature/fix branch → dev (allowed)"
+            exit 0
+          fi
+
+          # dev → stable is allowed (release promotion)
+          if [ "$PR_HEAD" = "dev" ] && [ "$PR_BASE" = "stable" ]; then
+            echo "PASS: dev → stable (release promotion, allowed)"
+            exit 0
+          fi
+
+          # stable → main is allowed (release promotion)
+          if [ "$PR_HEAD" = "stable" ] && [ "$PR_BASE" = "main" ]; then
+            echo "PASS: stable → main (release promotion, allowed)"
+            exit 0
+          fi
+
+          # Hotfix exception: any branch → main with label "hotfix" is allowed
+          if [ "$PR_BASE" = "main" ]; then
+            LABELS='${{ toJson(github.event.pull_request.labels) }}'
+            # Check if any label has name == "hotfix"
+            if echo "$LABELS" | grep -q '"name":"hotfix"'; then
+              echo "PASS: hotfix → main (emergency exception, allowed)"
+              echo "WARNING: must open follow-up PR $PR_HEAD → dev immediately after merge"
+              exit 0
+            fi
+          fi
+
+          # Any PR to stable that is NOT from dev is blocked
+          if [ "$PR_BASE" = "stable" ] && [ "$PR_HEAD" != "dev" ]; then
+            echo "FAIL: PR to stable must come from 'dev' (got '$PR_HEAD'). Skip 'dev' is not allowed."
+            exit 1
+          fi
+
+          # Any PR to main that is NOT from stable (and not hotfix) is blocked
+          if [ "$PR_BASE" = "main" ] && [ "$PR_HEAD" != "stable" ]; then
+            echo "FAIL: PR to main must come from 'stable' (got '$PR_HEAD'). Skip 'stable' is not allowed."
+            exit 1
+          fi
+
+          echo "PASS: ladder rules satisfied"
+          exit 0

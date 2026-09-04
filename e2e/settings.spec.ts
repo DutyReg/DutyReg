@@ -150,6 +150,40 @@ test.describe("settings", () => {
     await deleteWorker(page, "Doomed Worker");
   });
 
+  test("shows the empty state before any worker is added", async ({ page }) => {
+    const email = uniqueEmail("emptyworker");
+    await signUp(page, email);
+    await createCompany(page, "EmptyWorker Co");
+
+    await goto(page, "/settings/workers");
+    await expect(page.getByText("No workers yet", { exact: true })).toBeVisible();
+  });
+
+  test("reassigns a worker to another site from the edit form", async ({ page }) => {
+    const email = uniqueEmail("reassign");
+    await signUp(page, email);
+    await createCompany(page, "Reassign Co");
+
+    await addSite(page, "Site A");
+    await addSite(page, "Site B");
+    await addWorkerWithSite(page, "Kumari Silva", "R100", "Site A");
+
+    await goto(page, "/settings/workers");
+    const editForm = page
+      .locator("div")
+      .filter({ has: page.getByText("Kumari Silva", { exact: true }) })
+      .locator('form:has(input[name="id"])');
+    await editForm.locator('select[name="siteId"]').selectOption({ label: "Site B" });
+    await editForm.getByRole("button", { name: "Save changes" }).click();
+
+    // The worker's card header reflects the new site after revalidation.
+    const card = page
+      .locator("div")
+      .filter({ has: page.getByText("Kumari Silva", { exact: true }) });
+    await expect(card.getByText(/· Site B/)).toBeVisible({ timeout: 15_000 });
+    await expect(card.getByText(/· Site A/)).toHaveCount(0);
+  });
+
   test("settings sub-navigation highlights the active section", async ({ page }) => {
     const email = uniqueEmail("settingsnav");
     await signUp(page, email);

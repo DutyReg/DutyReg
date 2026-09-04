@@ -11,7 +11,10 @@ const PORT = Number(process.env.E2E_PORT ?? 3100);
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
+  retries: 2,
+  // CI runs against a single Turbopack dev server; cap parallelism so the
+  // combined load doesn't starve the dev server and cause save timeouts.
+  workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? "github" : "list",
   timeout: 60_000,
   use: {
